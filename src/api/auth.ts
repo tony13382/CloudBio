@@ -40,7 +40,7 @@ authRoutes.post("/register", async (c) => {
   const body = await c.req.json();
   const parsed = registerSchema.safeParse(body);
   if (!parsed.success) {
-    return c.json({ error: "Invalid input", details: parsed.error.issues }, 400);
+    return c.json({ error: "請填寫有效的信箱、使用者名稱（3-30字元）和密碼（至少8字元）" }, 400);
   }
 
   // Check allowed emails
@@ -80,7 +80,7 @@ authRoutes.post("/login", async (c) => {
   const body = await c.req.json();
   const parsed = loginSchema.safeParse(body);
   if (!parsed.success) {
-    return c.json({ error: "Invalid input" }, 400);
+    return c.json({ error: "請填寫有效的信箱和密碼" }, 400);
   }
 
   const db = createDb(c.env.DB);
@@ -101,7 +101,7 @@ authRoutes.post("/login", async (c) => {
     setSessionCookie(res.headers, token);
     return res;
   } catch {
-    return c.json({ error: "Invalid credentials" }, 401);
+    return c.json({ error: "信箱或密碼錯誤" }, 401);
   }
 });
 

@@ -23,7 +23,7 @@ export default function Register() {
       await register(email, username, password);
       navigate("/dashboard");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Registration failed");
+      setError(err instanceof Error ? err.message : "註冊失敗");
     } finally {
       setLoading(false);
     }

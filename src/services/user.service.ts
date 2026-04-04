@@ -11,12 +11,12 @@ export class UserService {
     const existing = await this.db.query.users.findFirst({
       where: eq(users.email, email),
     });
-    if (existing) throw new Error("Email already registered");
+    if (existing) throw new Error("此信箱已被註冊");
 
     const existingUsername = await this.db.query.users.findFirst({
       where: eq(users.username, username),
     });
-    if (existingUsername) throw new Error("Username already taken");
+    if (existingUsername) throw new Error("此使用者名稱已被使用");
 
     const id = nanoid();
     const passwordHash = await hashPassword(password);
@@ -84,7 +84,7 @@ export class UserService {
         where: eq(users.username, normalized),
       });
       if (existing && existing.id !== id) {
-        throw new Error("Username already taken");
+        throw new Error("此使用者名稱已被使用");
       }
       data.username = normalized;
     }
