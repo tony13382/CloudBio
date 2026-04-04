@@ -1,0 +1,1 @@
+ALTER TABLE appearances ADD COLUMN bg_blur INTEGER DEFAULT 0;

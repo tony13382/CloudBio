@@ -1,0 +1,401 @@
+import { useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
+import { api } from "../api";
+import type { Block } from "../hooks/useBlocks";
+import type { Appearance } from "../hooks/useAppearance";
+import { FONT_SIZE_MAP, type FontSize } from "../../lib/block-types";
+import { Loader2 } from "lucide-react";
+import type { SocialLink } from "../../lib/social-platforms";
+
+const socialSvgs = import.meta.glob("../assets/social/*.svg", { eager: true, query: "?url", import: "default" }) as Record<string, string>;
+function getSocialIconUrl(platform: string): string | undefined {
+  return socialSvgs[`../assets/social/${platform}.svg`];
+}
+
+type BioData = {
+  user: {
+    username: string;
+    displayName: string | null;
+    bio: string | null;
+    avatarUrl: string | null;
+    socialLinks: string | null;
+  };
+  blocks: Block[];
+  appearance: Appearance | null;
+};
+
+function resolveFontSize(key: string): string {
+  return FONT_SIZE_MAP[key as FontSize] || "1rem";
+}
+
+function extractYouTubeId(url: string): string | null {
+  const match = url.match(
+    /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([a-zA-Z0-9_-]{11})/
+  );
+  return match ? match[1] : null;
+}
+
+function getButtonRadius(style: string): string {
+  switch (style) {
+    case "pill": return "9999px";
+    case "square": return "0";
+    default: return "12px";
+  }
+}
+
+function BlockRenderer({ block, appearance }: { block: Block; appearance: Appearance | null }) {
+  const c: Record<string, unknown> = typeof block.config === "string" ? JSON.parse(block.config) : block.config;
+  const buttonStyle = appearance?.buttonStyle ?? "rounded";
+  const buttonColor = appearance?.buttonColor ?? "#111827";
+  const buttonTextColor = appearance?.buttonTextColor ?? "#ffffff";
+  const isOutline = buttonStyle === "outline";
+  const textColor = appearance?.textColor ?? "#111827";
+
+  switch (block.type) {
+    case "button": {
+      const filled = c.filled !== false;
+      const fontSize = resolveFontSize(String(c.fontSize || "medium"));
+      const showImage = !!c.showImage && !!c.imageUrl;
+      const showSubtitle = !!c.showSubtitle && !!c.subtitle;
+      const useFilled = filled && !isOutline;
+      const animation = String(c.animation || "none");
+      const animStyle: React.CSSProperties = animation === "pulse"
+        ? { animation: "bio-pulse 2s ease-in-out infinite" }
+        : animation === "bounce"
+          ? { animation: "bio-bounce 2s ease-in-out infinite" }
+          : {};
+
+      return (
+        <a
+          href={String(c.url || "#")}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="block w-full py-3 px-4 text-center font-medium no-underline transition-transform hover:scale-[1.02]"
+          style={{
+            background: useFilled ? buttonColor : "transparent",
+            color: useFilled ? buttonTextColor : buttonColor,
+            border: useFilled ? "none" : `2px solid ${buttonColor}`,
+            borderRadius: getButtonRadius(buttonStyle),
+            fontSize,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: "10px",
+            ...animStyle,
+          }}
+        >
+          {showImage && (
+            <img src={String(c.imageUrl)} alt="" style={{ width: 32, height: 32, borderRadius: 8, objectFit: "cover" }} />
+          )}
+          <span style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 2 }}>
+            <span>{String(c.title || "")}</span>
+            {showSubtitle && (
+              <span style={{ fontSize: "0.75em", opacity: 0.7 }}>{String(c.subtitle)}</span>
+            )}
+          </span>
+        </a>
+      );
+    }
+    case "banner": {
+      const images = (c.images as { url: string; linkUrl?: string; alt?: string; label?: string; labelColor?: string; labelPosition?: string; description?: string; descriptionAlign?: string }[]) || [];
+      if (images.length === 0) return null;
+      return (
+        <div style={{ display: "flex", overflowX: "auto", gap: 8, scrollSnapType: "x mandatory", scrollbarWidth: "none" }}>
+          {images.map((img, i) => {
+            const inner = (
+              <div key={i} style={{ flex: "0 0 85%", scrollSnapAlign: "start" }}>
+                <div style={{ position: "relative" }}>
+                  <img src={img.url} alt={img.alt || ""} style={{ width: "100%", height: 200, objectFit: "cover", borderRadius: 12 }} />
+                  {img.label && (
+                    <LabelOverlay label={img.label} color={img.labelColor} position={img.labelPosition} />
+                  )}
+                </div>
+                {img.description && (
+                  <p style={{ margin: "4px 0 0", fontSize: "0.8rem", opacity: 0.7, textAlign: (img.descriptionAlign as "left" | "center" | "right") || "center" }}>
+                    {img.description}
+                  </p>
+                )}
+              </div>
+            );
+            return img.linkUrl ? (
+              <a key={i} href={img.linkUrl} target="_blank" rel="noopener noreferrer" style={{ flex: "0 0 85%", textDecoration: "none", color: "inherit" }}>
+                {inner}
+              </a>
+            ) : inner;
+          })}
+        </div>
+      );
+    }
+    case "square": {
+      const imgUrl = String(c.imageUrl || "");
+      const linkUrl = String(c.linkUrl || "");
+      const content = (
+        <div>
+          <div style={{ position: "relative" }}>
+            <img src={imgUrl} alt={String(c.alt || "")} style={{ width: "100%", aspectRatio: "1", objectFit: "cover", borderRadius: 12, display: "block" }} />
+            {!!c.label && <LabelOverlay label={c.label as string} color={c.labelColor as string} position={c.labelPosition as string} />}
+          </div>
+          {!!c.description && (
+            <p style={{ margin: "4px 0 0", fontSize: "0.8rem", opacity: 0.7, textAlign: (c.descriptionAlign as "left" | "center" | "right") || "center" }}>
+              {String(c.description)}
+            </p>
+          )}
+        </div>
+      );
+      return linkUrl ? <a href={linkUrl} target="_blank" rel="noopener noreferrer" style={{ textDecoration: "none", color: "inherit" }}>{content}</a> : content;
+    }
+    case "dual_square": {
+      const images = (c.images as { imageUrl: string; linkUrl?: string; alt?: string; label?: string; labelColor?: string; labelPosition?: string; description?: string; descriptionAlign?: string }[]) || [];
+      return (
+        <div style={{ display: "flex", gap: 8 }}>
+          {images.slice(0, 2).map((img, i) => {
+            const content = (
+              <div key={i} style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ position: "relative" }}>
+                  <img src={img.imageUrl} alt={img.alt || ""} style={{ width: "100%", aspectRatio: "1", objectFit: "cover", borderRadius: 12, display: "block" }} />
+                  {img.label && <LabelOverlay label={img.label} color={img.labelColor} position={img.labelPosition} />}
+                </div>
+                {img.description && (
+                  <p style={{ margin: "4px 0 0", fontSize: "0.8rem", opacity: 0.7, textAlign: (img.descriptionAlign as "left" | "center" | "right") || "center" }}>
+                    {img.description}
+                  </p>
+                )}
+              </div>
+            );
+            return img.linkUrl ? (
+              <a key={i} href={img.linkUrl} target="_blank" rel="noopener noreferrer" style={{ flex: 1, minWidth: 0, textDecoration: "none", color: "inherit" }}>{content}</a>
+            ) : content;
+          })}
+        </div>
+      );
+    }
+    case "video": {
+      const videoId = extractYouTubeId(String(c.youtubeUrl || ""));
+      if (!videoId) return <p style={{ textAlign: "center", opacity: 0.5 }}>Invalid YouTube URL</p>;
+      return (
+        <div style={{ position: "relative", paddingBottom: "56.25%", height: 0, overflow: "hidden", borderRadius: 12 }}>
+          <iframe src={`https://www.youtube.com/embed/${videoId}`} style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", border: "none" }} allowFullScreen />
+        </div>
+      );
+    }
+    case "divider": {
+      return <hr style={{ border: "none", borderTop: `1px ${String(c.style || "solid")} currentColor`, opacity: 0.2, margin: "0.5rem 0" }} />;
+    }
+    case "text": {
+      const variant = String(c.variant || "paragraph");
+      const baseFontSize = resolveFontSize(String(c.fontSize || "medium"));
+      const fontSize = variant === "heading" ? `calc(${baseFontSize} * 1.4)` : baseFontSize;
+      const Tag = variant === "heading" ? "h2" : "p";
+      return (
+        <Tag style={{
+          fontSize,
+          color: (c.color as string) || textColor,
+          fontWeight: c.bold || variant === "heading" ? 700 : undefined,
+          fontStyle: c.italic ? "italic" : undefined,
+          textDecoration: c.underline ? "underline" : undefined,
+          textAlign: (c.align as "left" | "center" | "right") || "center",
+          margin: 0,
+          marginTop: variant === "heading" ? 16 : 0,
+        }}>
+          {String(c.content || "")}
+        </Tag>
+      );
+    }
+    default:
+      return null;
+  }
+}
+
+function LabelOverlay({ label, color, position }: { label?: string; color?: string; position?: string }) {
+  if (!label) return null;
+  const posMap: Record<string, React.CSSProperties> = {
+    "top-left": { top: 8, left: 8 },
+    "top-right": { top: 8, right: 8 },
+    "bottom-left": { bottom: 8, left: 8 },
+    "bottom-right": { bottom: 8, right: 8 },
+  };
+  return (
+    <span style={{
+      position: "absolute",
+      ...posMap[position || "top-left"],
+      background: color || "#000",
+      color: "#fff",
+      padding: "2px 8px",
+      borderRadius: 6,
+      fontSize: "0.75rem",
+      fontWeight: 500,
+      whiteSpace: "nowrap",
+    }}>
+      {label}
+    </span>
+  );
+}
+
+export default function BioPage() {
+  const { username } = useParams<{ username: string }>();
+  const [data, setData] = useState<BioData | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!username) return;
+    setLoading(true);
+    api.get<BioData>(`/bio/${username}`)
+      .then((d) => {
+        setData(d);
+        // Set favicon to user avatar
+        if (d.user.avatarUrl) {
+          let link = document.querySelector<HTMLLinkElement>("link[rel='icon']");
+          if (!link) {
+            link = document.createElement("link");
+            link.rel = "icon";
+            document.head.appendChild(link);
+          }
+          link.href = d.user.avatarUrl;
+        }
+      })
+      .catch((err) => setError(err instanceof Error ? err.message : "載入失敗"))
+      .finally(() => setLoading(false));
+  }, [username]);
+
+  if (loading) {
+    return (
+      <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <Loader2 className="h-8 w-8 animate-spin" style={{ color: "#999" }} />
+      </div>
+    );
+  }
+
+  if (error || !data) {
+    return (
+      <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "system-ui" }}>
+        <h1 style={{ opacity: 0.5 }}>@{username} 尚未建立頁面</h1>
+      </div>
+    );
+  }
+
+  const { user, blocks, appearance } = data;
+  const displayName = user.displayName || `@${user.username}`;
+  const initial = (user.displayName || user.username).charAt(0).toUpperCase();
+  const fontFamily = appearance?.fontFamily || "Inter";
+  const textColor = appearance?.textColor || "#111827";
+  const bgType = appearance?.bgType ?? "solid";
+  const bgValue = appearance?.bgValue ?? "#f8f9fa";
+
+  const profileStyle = appearance?.profileStyle ?? "blend";
+  const isCard = profileStyle === "card";
+  const bgBlur = appearance?.bgBlur ?? false;
+
+  const bgCss =
+    bgType === "gradient"
+      ? `background: ${bgValue};`
+      : bgType === "image"
+        ? `background: url(${bgValue}) center/cover no-repeat fixed; background-size: cover;`
+        : `background-color: ${bgValue};`;
+
+  const blurCss = bgBlur
+    ? `.bg-layer { position:fixed; inset:0; z-index:-1; ${bgCss} filter:blur(12px); transform:scale(1.05); } body { background:transparent; }`
+    : "";
+
+  return (
+    <>
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=${encodeURIComponent(fontFamily)}:wght@400;500;700&display=swap');
+        @keyframes bio-pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.03)} }
+        @keyframes bio-bounce { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-4px)} }
+        body { margin: 0; ${bgCss} min-height: 100vh; }
+        ${blurCss}
+      `}</style>
+      {bgBlur && <div className="bg-layer" />}
+      <div style={{
+        minHeight: "100vh",
+        fontFamily: `'${fontFamily}', system-ui`,
+        color: textColor,
+        display: "flex",
+        justifyContent: "center",
+        padding: "40px 16px",
+      }}>
+        <div style={{ width: "100%", maxWidth: 480, display: "flex", flexDirection: "column", alignItems: "center", gap: 12 }}>
+          {/* Profile header */}
+          <div style={{
+            width: "100%",
+            display: "flex", flexDirection: "column", alignItems: "center", gap: 8,
+            ...(isCard ? {
+              background: "rgba(255,255,255,0.85)",
+              backdropFilter: "blur(12px)",
+              borderRadius: 20,
+              padding: "28px 24px",
+              boxShadow: "0 1px 3px rgba(0,0,0,0.08)",
+              color: "#111827",
+            } : {}),
+          }}>
+            {/* Avatar */}
+            {user.avatarUrl ? (
+              <img src={user.avatarUrl} alt={displayName} style={{ width: 96, height: 96, borderRadius: "50%", objectFit: "cover" }} />
+            ) : (
+              <div style={{
+                width: 96, height: 96, borderRadius: "50%",
+                background: "rgba(0,0,0,0.1)", color: isCard ? "#111827" : textColor,
+                display: "flex", alignItems: "center", justifyContent: "center",
+                fontSize: 36, fontWeight: 700,
+              }}>
+                {initial}
+              </div>
+            )}
+
+            {/* Name */}
+            <h1 style={{ fontSize: "1.5rem", fontWeight: 700, textAlign: "center", margin: 0, color: isCard ? "#111827" : undefined }}>{displayName}</h1>
+
+            {/* Bio */}
+            {user.bio && (
+              <p style={{ textAlign: "center", opacity: 0.7, maxWidth: 360, margin: 0, whiteSpace: "pre-line", color: isCard ? "#111827" : undefined }}>{user.bio}</p>
+            )}
+
+            {/* Social Links */}
+            {(() => {
+              let links: SocialLink[] = [];
+              try { links = user.socialLinks ? JSON.parse(user.socialLinks) : []; } catch { /* */ }
+              if (links.length === 0) return null;
+              return (
+                <div style={{ display: "flex", gap: 16, flexWrap: "wrap", justifyContent: "center", marginTop: 16 }}>
+                  {links.map((link, i) => {
+                    const iconUrl = getSocialIconUrl(link.platform);
+                    return (
+                      <a
+                        key={i}
+                        href={link.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{ opacity: 0.7, transition: "opacity 0.2s" }}
+                        onMouseEnter={(e) => { e.currentTarget.style.opacity = "1"; }}
+                        onMouseLeave={(e) => { e.currentTarget.style.opacity = "0.7"; }}
+                      >
+                        {iconUrl ? (
+                          <img src={iconUrl} alt={link.platform} style={{ width: 24, height: 24, filter: isCard ? "none" : "invert(1)" }} />
+                        ) : (
+                          <span style={{ fontSize: 12 }}>{link.platform}</span>
+                        )}
+                      </a>
+                    );
+                  })}
+                </div>
+              );
+            })()}
+          </div>
+
+          {/* Blocks */}
+          <div style={{ width: "100%", display: "flex", flexDirection: "column", gap: 8, marginTop: 8 }}>
+            {blocks.map((block) => (
+              <BlockRenderer key={block.id} block={block} appearance={appearance} />
+            ))}
+          </div>
+
+          {/* Footer */}
+          <p style={{ fontSize: "0.625rem", opacity: 0.3, marginTop: "auto", paddingTop: 32 }}>
+            Powered by CloudBio
+          </p>
+        </div>
+      </div>
+    </>
+  );
+}
