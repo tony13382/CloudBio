@@ -6,6 +6,8 @@ import type { Appearance } from "../hooks/useAppearance";
 import { FONT_SIZE_MAP, type FontSize } from "../../lib/block-types";
 import { Loader2 } from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "../components/ui/dialog";
+import { Button } from "../components/ui/button";
 import type { SocialLink } from "../../lib/social-platforms";
 
 const socialSvgs = import.meta.glob("../assets/social/*.svg", { eager: true, query: "?url", import: "default" }) as Record<string, string>;
@@ -262,39 +264,22 @@ function ShareQRButtons({ pageUrl, displayName, isCard }: { pageUrl: string; dis
         </button>
       </div>
 
-      {/* QR Modal */}
-      {showQR && (
-        <div
-          onClick={() => setShowQR(false)}
-          style={{
-            position: "fixed", inset: 0, zIndex: 50,
-            background: "rgba(0,0,0,0.6)", backdropFilter: "blur(4px)",
-            display: "flex", alignItems: "center", justifyContent: "center",
-          }}
-        >
-          <div
-            onClick={(e) => e.stopPropagation()}
-            style={{
-              background: "#fff", borderRadius: 20, padding: 32,
-              display: "flex", flexDirection: "column", alignItems: "center", gap: 16,
-              boxShadow: "0 8px 32px rgba(0,0,0,0.2)",
-            }}
-          >
+      {/* QR Dialog */}
+      <Dialog open={showQR} onOpenChange={setShowQR}>
+        <DialogContent className="max-w-xs" aria-describedby={undefined}>
+          <DialogHeader>
+            <DialogTitle className="text-center">QR Code</DialogTitle>
+            <DialogDescription className="text-center">掃描 QR Code 開啟頁面</DialogDescription>
+          </DialogHeader>
+          <div className="flex flex-col items-center gap-4 py-4">
             <QRCodeSVG value={pageUrl} size={200} level="M" />
-            <p style={{ margin: 0, fontSize: 14, color: "#666" }}>掃描 QR Code 開啟頁面</p>
-            <button
-              onClick={() => setShowQR(false)}
-              style={{
-                background: "#111", color: "#fff", border: "none",
-                borderRadius: 8, padding: "8px 24px", fontSize: 14,
-                fontWeight: 500, cursor: "pointer",
-              }}
-            >
-              關閉
-            </button>
+            <p className="text-xs text-muted-foreground break-all text-center">{pageUrl}</p>
+            <Button className="w-full" onClick={() => { navigator.clipboard.writeText(pageUrl); }}>
+              複製連結
+            </Button>
           </div>
-        </div>
-      )}
+        </DialogContent>
+      </Dialog>
     </>
   );
 }
