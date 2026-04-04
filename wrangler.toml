@@ -17,4 +17,4 @@ id = "a53dc755194d4990a6df0ed3b4148249"
 
 [[r2_buckets]]
 binding = "R2"
-bucket_name = "biolinker-uploads"
+bucket_name = "cloudbio-r2"
