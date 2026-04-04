@@ -85,8 +85,8 @@ const RESERVED = new Set(["login", "register", "dashboard", "api"]);
 app.get("/:username", async (c) => {
   const username = (c.req.param("username") ?? "").toLowerCase();
 
-  // Skip reserved paths — let the SPA handle them
-  if (RESERVED.has(username)) {
+  // Skip reserved paths and files — let the SPA/static handler handle them
+  if (RESERVED.has(username) || username.includes(".")) {
     return c.notFound();
   }
 

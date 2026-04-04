@@ -5,6 +5,7 @@ import type { Block } from "../hooks/useBlocks";
 import type { Appearance } from "../hooks/useAppearance";
 import { FONT_SIZE_MAP, type FontSize } from "../../lib/block-types";
 import { Loader2 } from "lucide-react";
+import { QRCodeSVG } from "qrcode.react";
 import type { SocialLink } from "../../lib/social-platforms";
 
 const socialSvgs = import.meta.glob("../assets/social/*.svg", { eager: true, query: "?url", import: "default" }) as Record<string, string>;
@@ -231,6 +232,73 @@ function LabelOverlay({ label, color, position }: { label?: string; color?: stri
   );
 }
 
+function ShareQRButtons({ pageUrl, displayName, isCard }: { pageUrl: string; displayName: string; isCard: boolean }) {
+  const [showQR, setShowQR] = useState(false);
+  const iconColor = isCard ? "#111827" : "currentColor";
+
+  const handleShare = async () => {
+    if (navigator.share) {
+      await navigator.share({ title: displayName, url: pageUrl }).catch(() => {});
+    } else {
+      await navigator.clipboard.writeText(pageUrl);
+      alert("已複製連結！");
+    }
+  };
+
+  return (
+    <>
+      <div style={{ position: "absolute", top: 12, left: 16, right: 16, display: "flex", justifyContent: "space-between" }}>
+        <button onClick={handleShare} style={{ background: "none", border: "none", cursor: "pointer", padding: 4, opacity: 0.6 }} title="分享">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={iconColor} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" />
+            <polyline points="16 6 12 2 8 6" />
+            <line x1="12" y1="2" x2="12" y2="15" />
+          </svg>
+        </button>
+        <button onClick={() => setShowQR(true)} style={{ background: "none", border: "none", cursor: "pointer", padding: 4, opacity: 0.6 }} title="QR Code">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill={iconColor}>
+            <path d="M3 3h8v8H3V3zm2 2v4h4V5H5zm8-2h8v8h-8V3zm2 2v4h4V5h-4zM3 13h8v8H3v-8zm2 2v4h4v-4H5zm11-2h2v2h-2v-2zm-4 0h2v2h-2v-2zm0 4h2v2h-2v-2zm4 0h2v2h-2v-2zm2-4h2v2h-2v-2zm0 4h2v2h-2v-2zm2-2h2v2h-2v-2z" />
+          </svg>
+        </button>
+      </div>
+
+      {/* QR Modal */}
+      {showQR && (
+        <div
+          onClick={() => setShowQR(false)}
+          style={{
+            position: "fixed", inset: 0, zIndex: 50,
+            background: "rgba(0,0,0,0.6)", backdropFilter: "blur(4px)",
+            display: "flex", alignItems: "center", justifyContent: "center",
+          }}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              background: "#fff", borderRadius: 20, padding: 32,
+              display: "flex", flexDirection: "column", alignItems: "center", gap: 16,
+              boxShadow: "0 8px 32px rgba(0,0,0,0.2)",
+            }}
+          >
+            <QRCodeSVG value={pageUrl} size={200} level="M" />
+            <p style={{ margin: 0, fontSize: 14, color: "#666" }}>掃描 QR Code 開啟頁面</p>
+            <button
+              onClick={() => setShowQR(false)}
+              style={{
+                background: "#111", color: "#fff", border: "none",
+                borderRadius: 8, padding: "8px 24px", fontSize: 14,
+                fontWeight: 500, cursor: "pointer",
+              }}
+            >
+              關閉
+            </button>
+          </div>
+        </div>
+      )}
+    </>
+  );
+}
+
 export default function BioPage() {
   const { username } = useParams<{ username: string }>();
   const [data, setData] = useState<BioData | null>(null);
@@ -329,6 +397,9 @@ export default function BioPage() {
               color: "#111827",
             } : {}),
           }}>
+            {/* Share + QR buttons */}
+            <ShareQRButtons pageUrl={window.location.href} displayName={displayName} isCard={isCard} />
+
             {/* Avatar */}
             {user.avatarUrl ? (
               <img src={user.avatarUrl} alt={displayName} style={{ width: 96, height: 96, borderRadius: "50%", objectFit: "cover" }} />
