@@ -8,12 +8,12 @@ not_found_handling = "single-page-application"
 [[d1_databases]]
 binding = "DB"
 database_name = "cloudbio"
-database_id = "local"
+database_id = "3b7f1c86-cb69-40a3-9a08-cefd05287146"
 migrations_dir = "drizzle"
 
 [[kv_namespaces]]
 binding = "KV"
-id = "local"
+id = "a53dc755194d4990a6df0ed3b4148249"
 
 [[r2_buckets]]
 binding = "R2"
