@@ -43,6 +43,15 @@ authRoutes.post("/register", async (c) => {
     return c.json({ error: "Invalid input", details: parsed.error.issues }, 400);
   }
 
+  // Check allowed emails
+  const allowedEmails = c.env.ALLOWED_EMAILS?.trim();
+  if (allowedEmails) {
+    const whitelist = new Set(allowedEmails.split(",").map((e) => e.trim().toLowerCase()));
+    if (!whitelist.has(parsed.data.email.toLowerCase())) {
+      return c.json({ error: "此信箱不在允許名單中" }, 403);
+    }
+  }
+
   const db = createDb(c.env.DB);
   const userService = new UserService(db);
 

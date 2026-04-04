@@ -4,6 +4,7 @@ export type Env = {
     KV: KVNamespace;
     R2: R2Bucket;
     JWT_SECRET: string;
+    ALLOWED_EMAILS?: string; // comma-separated, empty = no restriction
   };
   Variables: {
     userId: string;
