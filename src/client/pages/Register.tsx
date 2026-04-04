@@ -61,7 +61,7 @@ export default function Register() {
               <div className="space-y-2">
                 <Label htmlFor="username">使用者名稱</Label>
                 <div className="flex items-center gap-2">
-                  <span className="text-sm text-muted-foreground whitespace-nowrap">cloudbio.lu-dev.com/</span>
+                  <span className="text-sm text-muted-foreground whitespace-nowrap">cloudbio.lumakes.com/</span>
                   <Input
                     id="username"
                     type="text"
