@@ -54,7 +54,7 @@ export default function Dashboard() {
             </Button>
 
             <div
-              className={`rounded-2xl p-8 flex flex-col items-center gap-3 cursor-pointer transition-shadow hover:shadow-md ${isCard ? "bg-white shadow-sm" : "bg-muted/50"}`}
+              className={`rounded-2xl p-8 flex flex-col items-center gap-3 cursor-pointer transition-shadow hover:shadow-md ${isCard ? "bg-white/85 backdrop-blur shadow-sm" : ""}`}
               onClick={() => setShowProfileEditor(true)}
             >
             {/* Avatar */}
