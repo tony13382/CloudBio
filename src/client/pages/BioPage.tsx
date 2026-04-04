@@ -234,9 +234,18 @@ function LabelOverlay({ label, color, position }: { label?: string; color?: stri
   );
 }
 
-function ShareQRButtons({ pageUrl, displayName, isCard }: { pageUrl: string; displayName: string; isCard: boolean }) {
+function isLightColor(hex: string): boolean {
+  const c = hex.replace("#", "");
+  if (c.length < 6) return false;
+  const r = parseInt(c.slice(0, 2), 16);
+  const g = parseInt(c.slice(2, 4), 16);
+  const b = parseInt(c.slice(4, 6), 16);
+  return (r * 299 + g * 587 + b * 114) / 1000 > 150;
+}
+
+function ShareQRButtons({ pageUrl, displayName, isCard, textColor }: { pageUrl: string; displayName: string; isCard: boolean; textColor: string }) {
   const [showQR, setShowQR] = useState(false);
-  const iconColor = isCard ? "#111827" : "currentColor";
+  const iconColor = isCard ? "#111827" : textColor;
 
   const handleShare = async () => {
     if (navigator.share) {
@@ -250,14 +259,14 @@ function ShareQRButtons({ pageUrl, displayName, isCard }: { pageUrl: string; dis
   return (
     <>
       <div style={{ position: "absolute", top: 16, left: 16, right: 16, display: "flex", justifyContent: "space-between" }}>
-        <button onClick={handleShare} style={{ background: "none", border: "none", cursor: "pointer", padding: 4, opacity: 0.6 }} title="分享">
+        <button onClick={handleShare} style={{ background: "none", border: "none", cursor: "pointer", padding: 4, opacity: 0.5 }} title="分享">
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={iconColor} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" />
             <polyline points="16 6 12 2 8 6" />
             <line x1="12" y1="2" x2="12" y2="15" />
           </svg>
         </button>
-        <button onClick={() => setShowQR(true)} style={{ background: "none", border: "none", cursor: "pointer", padding: 4, opacity: 0.6 }} title="QR Code">
+        <button onClick={() => setShowQR(true)} style={{ background: "none", border: "none", cursor: "pointer", padding: 4, opacity: 0.5 }} title="QR Code">
           <svg width="22" height="22" viewBox="0 0 24 24" fill={iconColor}>
             <path d="M3 3h8v8H3V3zm2 2v4h4V5H5zm8-2h8v8h-8V3zm2 2v4h4V5h-4zM3 13h8v8H3v-8zm2 2v4h4v-4H5zm11-2h2v2h-2v-2zm-4 0h2v2h-2v-2zm0 4h2v2h-2v-2zm4 0h2v2h-2v-2zm2-4h2v2h-2v-2zm0 4h2v2h-2v-2zm2-2h2v2h-2v-2z" />
           </svg>
@@ -383,7 +392,7 @@ export default function BioPage() {
             } : {}),
           }}>
             {/* Share + QR buttons */}
-            <ShareQRButtons pageUrl={window.location.href} displayName={displayName} isCard={isCard} />
+            <ShareQRButtons pageUrl={window.location.href} displayName={displayName} isCard={isCard} textColor={textColor} />
 
             {/* Avatar */}
             {user.avatarUrl ? (
@@ -427,7 +436,7 @@ export default function BioPage() {
                         onMouseLeave={(e) => { e.currentTarget.style.opacity = "0.7"; }}
                       >
                         {iconUrl ? (
-                          <img src={iconUrl} alt={link.platform} style={{ width: 24, height: 24, filter: isCard ? "none" : "invert(1)" }} />
+                          <img src={iconUrl} alt={link.platform} style={{ width: 24, height: 24, filter: isLightColor(isCard ? "#111827" : textColor) ? "invert(1)" : "none" }} />
                         ) : (
                           <span style={{ fontSize: 12 }}>{link.platform}</span>
                         )}

@@ -218,6 +218,15 @@ export default function PhonePreview({ username, displayName, bio, blocks, appea
   const activeBlocks = blocks.filter((b) => b.isActive !== false);
 
   const isCard = profileStyle === "card";
+  const effectiveIconColor = isCard ? "#111827" : textColor;
+  const isLightTextColor = (() => {
+    const c = effectiveIconColor.replace("#", "");
+    if (c.length < 6) return false;
+    const r = parseInt(c.slice(0, 2), 16);
+    const g = parseInt(c.slice(2, 4), 16);
+    const b = parseInt(c.slice(4, 6), 16);
+    return (r * 299 + g * 587 + b * 114) / 1000 > 150;
+  })();
 
   return (
     <div className="flex justify-center">
@@ -258,7 +267,7 @@ export default function PhonePreview({ username, displayName, bio, blocks, appea
                   return (
                     <a key={i} href={link.url} target="_blank" rel="noopener noreferrer" className="opacity-60 hover:opacity-100 transition-opacity">
                       {iconSrc ? (
-                        <img src={iconSrc} alt={link.platform} className="w-5 h-5" style={{ filter: isCard ? "none" : "invert(1)" }} />
+                        <img src={iconSrc} alt={link.platform} className="w-5 h-5" style={{ filter: isLightTextColor ? "invert(1)" : "none" }} />
                       ) : (
                         <span className="text-[8px]">{link.platform}</span>
                       )}
