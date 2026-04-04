@@ -249,7 +249,7 @@ function ShareQRButtons({ pageUrl, displayName, isCard }: { pageUrl: string; dis
 
   return (
     <>
-      <div style={{ position: "absolute", top: 12, left: 16, right: 16, display: "flex", justifyContent: "space-between" }}>
+      <div style={{ position: "absolute", top: 16, left: 16, right: 16, display: "flex", justifyContent: "space-between" }}>
         <button onClick={handleShare} style={{ background: "none", border: "none", cursor: "pointer", padding: 4, opacity: 0.6 }} title="分享">
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={iconColor} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" />
