@@ -8,13 +8,17 @@ not_found_handling = "single-page-application"
 [[d1_databases]]
 binding = "DB"
 database_name = "cloudbio"
-database_id = "3b7f1c86-cb69-40a3-9a08-cefd05287146"
+database_id = "<YOUR_D1_DATABASE_ID>"
 migrations_dir = "drizzle"
 
 [[kv_namespaces]]
 binding = "KV"
-id = "a53dc755194d4990a6df0ed3b4148249"
+id = "<YOUR_KV_NAMESPACE_ID>"
 
 [[r2_buckets]]
 binding = "R2"
 bucket_name = "cloudbio-r2"
+
+# Secrets (set via `wrangler secret put`):
+# - JWT_SECRET: random string for JWT signing
+# - ALLOWED_EMAILS: comma-separated whitelist (optional)
