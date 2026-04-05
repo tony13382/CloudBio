@@ -14,6 +14,8 @@ import { Tabs, TabsList, TabsTrigger } from "./ui/tabs";
 import { cn } from "../lib/utils";
 import { Plus, Trash2, Eye, EyeOff } from "lucide-react";
 import ImageUploader from "./ImageUploader";
+import MarkdownEditor from "./MarkdownEditor";
+import { usePages } from "../hooks/usePages";
 
 type Props = {
   open: boolean;
@@ -87,6 +89,7 @@ export default function BlockEditor({ open, type, config, isActive, onSave, onTo
             </div>
           )}
           {type === "text" && <TextEditor data={data} update={update} />}
+          {type === "markdown" && <MarkdownEditor data={data} update={update} />}
 
           <Separator />
 
@@ -342,16 +345,7 @@ function ButtonEditor({ data, update }: { data: Record<string, unknown>; update:
         </div>
       )}
 
-      <div className="space-y-2">
-        <Label>網址</Label>
-        <Input
-          type="url"
-          required
-          value={String(data.url || "")}
-          onChange={(e) => update("url", e.target.value)}
-          placeholder="https://example.com"
-        />
-      </div>
+      <LinkTypeField data={data} update={update} />
 
       <div className="space-y-2">
         <Label>動態效果</Label>
@@ -375,6 +369,63 @@ function ButtonEditor({ data, update }: { data: Record<string, unknown>; update:
           label="按鈕圖片"
           recommendedSize="320 x 320"
           aspectRatio={1}
+        />
+      )}
+    </div>
+  );
+}
+
+function LinkTypeField({
+  data,
+  update,
+}: {
+  data: Record<string, unknown>;
+  update: (k: string, v: unknown) => void;
+}) {
+  const { subPages } = usePages();
+  const linkType = String(data.linkType || "url");
+
+  return (
+    <div className="space-y-2">
+      <Label>連結類型</Label>
+      <Tabs value={linkType} onValueChange={(v) => update("linkType", v)}>
+        <TabsList className="grid grid-cols-2 w-full">
+          <TabsTrigger value="url">外部網址</TabsTrigger>
+          <TabsTrigger value="page">本站頁面</TabsTrigger>
+        </TabsList>
+      </Tabs>
+
+      {linkType === "page" ? (
+        <div className="pt-2">
+          {subPages.length === 0 ? (
+            <p className="text-xs text-muted-foreground">
+              尚無可連結的子頁。請先到主頁 tab 旁點「新增頁面」。
+            </p>
+          ) : (
+            <Select
+              value={String(data.pageSlug || "")}
+              onValueChange={(v) => update("pageSlug", v)}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="選擇頁面" />
+              </SelectTrigger>
+              <SelectContent>
+                {subPages.map((p) => (
+                  <SelectItem key={p.id} value={p.slug}>
+                    {p.title ? `${p.title} (/${p.slug})` : `/${p.slug}`}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
+        </div>
+      ) : (
+        <Input
+          type="url"
+          required
+          value={String(data.url || "")}
+          onChange={(e) => update("url", e.target.value)}
+          placeholder="https://example.com"
         />
       )}
     </div>
@@ -555,3 +606,4 @@ function TextEditor({ data, update }: { data: Record<string, unknown>; update: (
     </div>
   );
 }
+

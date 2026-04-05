@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, Link } from "react-router-dom";
 import { api } from "../api";
 import type { Block } from "../hooks/useBlocks";
 import type { Appearance } from "../hooks/useAppearance";
@@ -8,6 +8,8 @@ import { Loader2 } from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "../components/ui/dialog";
 import { Button } from "../components/ui/button";
+import PageHeader from "../components/PageHeader";
+import { renderMarkdown } from "../../lib/markdown";
 import type { SocialLink } from "../../lib/social-platforms";
 
 const socialSvgs = import.meta.glob("../assets/social/*.svg", { eager: true, query: "?url", import: "default" }) as Record<string, string>;
@@ -22,6 +24,12 @@ type BioData = {
     bio: string | null;
     avatarUrl: string | null;
     socialLinks: string | null;
+  };
+  page?: {
+    id: string;
+    slug: string;
+    title: string | null;
+    isDefault: boolean;
   };
   blocks: Block[];
   appearance: Appearance | null;
@@ -46,7 +54,7 @@ function getButtonRadius(style: string): string {
   }
 }
 
-function BlockRenderer({ block, appearance }: { block: Block; appearance: Appearance | null }) {
+function BlockRenderer({ block, appearance, username }: { block: Block; appearance: Appearance | null; username: string }) {
   const c: Record<string, unknown> = typeof block.config === "string" ? JSON.parse(block.config) : block.config;
   const buttonStyle = appearance?.buttonStyle ?? "rounded";
   const buttonColor = appearance?.buttonColor ?? "#111827";
@@ -68,25 +76,13 @@ function BlockRenderer({ block, appearance }: { block: Block; appearance: Appear
           ? { animation: "bio-bounce 2s ease-in-out infinite" }
           : {};
 
-      return (
-        <a
-          href={String(c.url || "#")}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="block w-full py-3 px-4 text-center font-medium no-underline transition-transform hover:scale-[1.02]"
-          style={{
-            background: useFilled ? buttonColor : "transparent",
-            color: useFilled ? buttonTextColor : buttonColor,
-            border: useFilled ? "none" : `2px solid ${buttonColor}`,
-            borderRadius: getButtonRadius(buttonStyle),
-            fontSize,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            gap: "10px",
-            ...animStyle,
-          }}
-        >
+      const linkType = String(c.linkType || "url");
+      const isInternal = linkType === "page" && c.pageSlug;
+      const internalHref = isInternal ? `/${username}/${String(c.pageSlug)}` : null;
+      const externalHref = String(c.url || "#");
+
+      const content = (
+        <>
           {showImage && (
             <img src={String(c.imageUrl)} alt="" style={{ width: 32, height: 32, borderRadius: 8, objectFit: "cover" }} />
           )}
@@ -96,6 +92,41 @@ function BlockRenderer({ block, appearance }: { block: Block; appearance: Appear
               <span style={{ fontSize: "0.75em", opacity: 0.7 }}>{String(c.subtitle)}</span>
             )}
           </span>
+        </>
+      );
+
+      const sharedStyle: React.CSSProperties = {
+        background: useFilled ? buttonColor : "transparent",
+        color: useFilled ? buttonTextColor : buttonColor,
+        border: useFilled ? "none" : `2px solid ${buttonColor}`,
+        borderRadius: getButtonRadius(buttonStyle),
+        fontSize,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        gap: "10px",
+        ...animStyle,
+      };
+
+      const sharedClass = "block w-full py-3 px-4 text-center font-medium no-underline transition-transform hover:scale-[1.02]";
+
+      if (internalHref) {
+        return (
+          <Link to={internalHref} className={sharedClass} style={sharedStyle}>
+            {content}
+          </Link>
+        );
+      }
+
+      return (
+        <a
+          href={externalHref}
+          target="_blank"
+          rel="noopener noreferrer"
+          className={sharedClass}
+          style={sharedStyle}
+        >
+          {content}
         </a>
       );
     }
@@ -183,6 +214,30 @@ function BlockRenderer({ block, appearance }: { block: Block; appearance: Appear
     }
     case "divider": {
       return <hr style={{ border: "none", borderTop: `1px ${String(c.style || "solid")} currentColor`, opacity: 0.2, margin: "0.5rem 0" }} />;
+    }
+    case "markdown": {
+      const source = String(c.content || "");
+      if (!source) return null;
+      const html = renderMarkdown(source);
+      const mdStyle = String(c.style || "card");
+      const wrapperStyle: React.CSSProperties = mdStyle === "card"
+        ? {
+            background: "rgba(255,255,255,0.85)",
+            backdropFilter: "blur(12px)",
+            WebkitBackdropFilter: "blur(12px)",
+            borderRadius: 20,
+            padding: 16,
+            color: "#111827",
+            boxShadow: "0 1px 3px rgba(0,0,0,0.08)",
+          }
+        : { background: "transparent", padding: 0, color: textColor };
+      return (
+        <div
+          className={`markdown-body markdown-${mdStyle}`}
+          style={{ fontSize: "0.95rem", lineHeight: 1.6, ...wrapperStyle }}
+          dangerouslySetInnerHTML={{ __html: html }}
+        />
+      );
     }
     case "text": {
       const variant = String(c.variant || "paragraph");
@@ -294,7 +349,8 @@ function ShareQRButtons({ pageUrl, displayName, isCard, textColor }: { pageUrl: 
 }
 
 export default function BioPage() {
-  const { username } = useParams<{ username: string }>();
+  const { username, pageSlug } = useParams<{ username: string; pageSlug?: string }>();
+  const isSubPage = !!pageSlug;
   const [data, setData] = useState<BioData | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -302,7 +358,9 @@ export default function BioPage() {
   useEffect(() => {
     if (!username) return;
     setLoading(true);
-    api.get<BioData>(`/bio/${username}`)
+    setData(null);
+    const endpoint = pageSlug ? `/bio/${username}/${pageSlug}` : `/bio/${username}`;
+    api.get<BioData>(endpoint)
       .then((d) => {
         setData(d);
         // Set favicon to user avatar
@@ -318,7 +376,7 @@ export default function BioPage() {
       })
       .catch((err) => setError(err instanceof Error ? err.message : "載入失敗"))
       .finally(() => setLoading(false));
-  }, [username]);
+  }, [username, pageSlug]);
 
   const displayName = data?.user.displayName || (data ? `@${data.user.username}` : "");
   const fontFamily = data?.appearance?.fontFamily || "Noto Sans TC";
@@ -386,18 +444,51 @@ export default function BioPage() {
         @keyframes bio-bounce { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-4px)} }
         body { margin: 0; ${bgCss} min-height: 100vh; }
         ${blurCss}
+        .markdown-body > :first-child { margin-top: 0; }
+        .markdown-body > :last-child { margin-bottom: 0; }
+        .markdown-body h1, .markdown-body h2, .markdown-body h3 { margin: 1em 0 0.5em; font-weight: 700; line-height: 1.3; }
+        .markdown-body h1 { font-size: 1.4em; }
+        .markdown-body h2 { font-size: 1.2em; }
+        .markdown-body h3 { font-size: 1.05em; }
+        .markdown-body p { margin: 0.5em 0; }
+        .markdown-body a { color: #2563eb; text-decoration: underline; }
+        .markdown-body ul, .markdown-body ol { margin: 0.5em 0; padding-left: 1.4em; }
+        .markdown-body ul { list-style: disc outside; }
+        .markdown-body ol { list-style: decimal outside; }
+        .markdown-body ul ul { list-style: circle outside; }
+        .markdown-body ul ul ul { list-style: square outside; }
+        .markdown-body li { margin: 0.25em 0; display: list-item; }
+        .markdown-body blockquote { margin: 0.5em 0; padding: 0.25em 0.9em; border-left: 3px solid currentColor; opacity: 1; }
+        .markdown-body blockquote > * { opacity: 0.75; }
+        .markdown-body code { background: rgba(127,127,127,0.18); padding: 0.1em 0.35em; border-radius: 4px; font-size: 0.88em; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+        .markdown-body pre { background: rgba(127,127,127,0.18); padding: 0.8em 1em; border-radius: 8px; overflow-x: auto; font-size: 0.85em; }
+        .markdown-body pre code { background: transparent; padding: 0; }
+        .markdown-body img { max-width: 100%; border-radius: 8px; }
+        .markdown-body hr { border: none; border-top: 1px solid currentColor; opacity: 0.2; margin: 1em 0; }
+        .markdown-body table { border-collapse: collapse; width: 100%; margin: 0.5em 0; }
+        .markdown-body th, .markdown-body td { border: 1px solid currentColor; border-color: rgba(127,127,127,0.3); padding: 0.4em 0.6em; text-align: left; }
+        .markdown-blend a { color: inherit; text-decoration: underline; }
       `}</style>
       {bgBlur && <div className="bg-layer" />}
+      {isSubPage && (
+        <PageHeader
+          username={user.username}
+          title={data.page?.title ?? null}
+          displayName={displayName}
+          avatarUrl={user.avatarUrl}
+        />
+      )}
       <div style={{
         minHeight: "100vh",
         fontFamily: `'${fontFamily}', system-ui`,
         color: textColor,
         display: "flex",
         justifyContent: "center",
-        padding: "40px 16px",
+        padding: isSubPage ? "80px 16px 40px" : "40px 16px",
       }}>
         <div style={{ width: "100%", maxWidth: 480, display: "flex", flexDirection: "column", alignItems: "center", gap: 12 }}>
-          {/* Profile header */}
+          {/* Profile header — only on main page */}
+          {!isSubPage && (
           <div style={{
             width: "100%",
             display: "flex", flexDirection: "column", alignItems: "center", gap: 8,
@@ -466,11 +557,12 @@ export default function BioPage() {
               );
             })()}
           </div>
+          )}
 
           {/* Blocks */}
           <div style={{ width: "100%", display: "flex", flexDirection: "column", gap: 8, marginTop: 8 }}>
             {blocks.map((block) => (
-              <BlockRenderer key={block.id} block={block} appearance={appearance} />
+              <BlockRenderer key={block.id} block={block} appearance={appearance} username={user.username} />
             ))}
           </div>
 

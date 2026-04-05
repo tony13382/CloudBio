@@ -1,4 +1,5 @@
 import { generateCSS } from "./themes";
+import { renderMarkdown } from "../lib/markdown";
 
 type User = {
   username: string;
@@ -53,12 +54,11 @@ function renderDescription(desc?: string, align?: string): string {
   return `<p style="margin:4px 0 0;font-size:0.8rem;opacity:0.7;text-align:${escapeHtml(textAlign)};">${escapeHtml(desc)}</p>`;
 }
 
-function renderBlock(block: Block, appearance: Appearance | null): string {
+function renderBlock(block: Block, appearance: Appearance | null, ctx: { username: string }): string {
   const c = block.config;
   switch (block.type) {
     case "button": {
       const title = escapeHtml(String(c.title || ""));
-      const url = escapeHtml(String(c.url || "#"));
       const subtitle = c.showSubtitle && c.subtitle ? escapeHtml(String(c.subtitle)) : "";
       const imageUrl = c.showImage && c.imageUrl ? escapeHtml(String(c.imageUrl)) : "";
       const fontSize = FONT_SIZE_MAP[String(c.fontSize || "medium")] || "1rem";
@@ -67,6 +67,13 @@ function renderBlock(block: Block, appearance: Appearance | null): string {
 
       const animClass = animation !== "none" ? ` bio-anim-${escapeHtml(animation)}` : "";
       const filledClass = filled ? "" : " link-btn-outline";
+
+      const linkType = String(c.linkType || "url");
+      const isInternal = linkType === "page" && c.pageSlug;
+      const href = isInternal
+        ? `/${encodeURIComponent(ctx.username)}/${escapeHtml(String(c.pageSlug))}`
+        : escapeHtml(String(c.url || "#"));
+      const targetAttr = isInternal ? "" : ' target="_blank" rel="noopener noreferrer"';
 
       let inner = "";
       if (imageUrl) {
@@ -78,7 +85,7 @@ function renderBlock(block: Block, appearance: Appearance | null): string {
       inner += textPart;
 
       const flexStyle = imageUrl ? "display:flex;align-items:center;justify-content:center;gap:10px;" : "";
-      return `<a class="link-btn${filledClass}${animClass}" href="${url}" target="_blank" rel="noopener noreferrer" style="${flexStyle}font-size:${fontSize};">${inner}</a>`;
+      return `<a class="link-btn${filledClass}${animClass}" href="${href}"${targetAttr} style="${flexStyle}font-size:${fontSize};">${inner}</a>`;
     }
     case "banner": {
       const images = (c.images as { url: string; linkUrl?: string; alt?: string; label?: string; labelColor?: string; labelPosition?: string; description?: string; descriptionAlign?: string }[]) || [];
@@ -131,6 +138,16 @@ function renderBlock(block: Block, appearance: Appearance | null): string {
       const style = String(c.style || "solid");
       return `<hr style="border:none;border-top:1px ${escapeHtml(style)} currentColor;opacity:0.2;margin:0.5rem 0;" />`;
     }
+    case "markdown": {
+      const source = String(c.content || "");
+      if (!source) return "";
+      const html = renderMarkdown(source);
+      const mdStyle = String(c.style || "card");
+      const wrapperStyle = mdStyle === "card"
+        ? "background:rgba(255,255,255,0.85);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-radius:20px;padding:16px;color:#111827;box-shadow:0 1px 3px rgba(0,0,0,0.08);font-size:0.95rem;line-height:1.6;"
+        : "background:transparent;padding:0;font-size:0.95rem;line-height:1.6;";
+      return `<div class="markdown-body markdown-${escapeHtml(mdStyle)}" style="${wrapperStyle}">${html}</div>`;
+    }
     case "text": {
       const content = escapeHtml(String(c.content || ""));
       const variant = String(c.variant || "paragraph");
@@ -151,6 +168,140 @@ function renderBlock(block: Block, appearance: Appearance | null): string {
   }
 }
 
+type PageMeta = {
+  slug: string;
+  title: string | null;
+};
+
+export function renderSubPage(
+  user: User,
+  page: PageMeta,
+  blocks: Block[],
+  appearance: Appearance | null
+): string {
+  const displayName = user.displayName || `@${user.username}`;
+  const css = generateCSS(appearance);
+  const initial = (user.displayName || user.username).charAt(0).toUpperCase();
+
+  const fontFamily = appearance?.fontFamily || "Noto Sans TC";
+  const googleFontUrl = `https://fonts.googleapis.com/css2?family=${encodeURIComponent(fontFamily)}:wght@400;700&display=swap`;
+
+  const blocksHtml = blocks.map((b) => renderBlock(b, appearance, { username: user.username })).filter(Boolean).join("\n      ");
+
+  const avatarHtml = user.avatarUrl
+    ? `<img src="${escapeHtml(user.avatarUrl)}" alt="${escapeHtml(displayName)}" style="width:36px;height:36px;border-radius:50%;object-fit:cover;" />`
+    : `<div style="width:36px;height:36px;border-radius:50%;background:rgba(0,0,0,0.1);display:flex;align-items:center;justify-content:center;font-size:0.95rem;font-weight:700;">${escapeHtml(initial)}</div>`;
+
+  const pageTitle = page.title || displayName;
+  const backHref = `/${escapeHtml(user.username)}`;
+
+  return `<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>${escapeHtml(pageTitle)}．${escapeHtml(displayName)}</title>
+  <meta name="description" content="${escapeHtml(pageTitle)} - ${escapeHtml(displayName)}" />
+  <meta property="og:title" content="${escapeHtml(pageTitle)}" />
+  <meta property="og:description" content="${escapeHtml(displayName)}" />
+  ${user.avatarUrl ? `<link rel="icon" href="${escapeHtml(user.avatarUrl)}" />` : `<link rel="icon" type="image/png" href="/favicon.png" />`}
+  ${user.avatarUrl ? `<meta property="og:image" content="${escapeHtml(user.avatarUrl)}" />` : ""}
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="preload" href="${googleFontUrl}" as="style" onload="this.rel='stylesheet'" />
+  <noscript><link href="${googleFontUrl}" rel="stylesheet" /></noscript>
+  <style>
+${css}
+body { padding-top: 72px; }
+.link-btn-outline { background: transparent !important; border: 2px solid currentColor; }
+@keyframes bio-pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.03)} }
+@keyframes bio-bounce { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-4px)} }
+@keyframes bio-shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-3px)} 75%{transform:translateX(3px)} }
+.bio-anim-pulse { animation: bio-pulse 2s ease-in-out infinite; }
+.bio-anim-bounce { animation: bio-bounce 2s ease-in-out infinite; }
+.bio-anim-shake:hover { animation: bio-shake 0.4s ease-in-out; }
+.banner-carousel::-webkit-scrollbar { display: none; }
+.banner-carousel { scrollbar-width: none; }
+.markdown-body > :first-child { margin-top: 0; }
+.markdown-body > :last-child { margin-bottom: 0; }
+.markdown-body h1, .markdown-body h2, .markdown-body h3 { margin: 1em 0 0.5em; font-weight: 700; line-height: 1.3; }
+.markdown-body h1 { font-size: 1.4em; }
+.markdown-body h2 { font-size: 1.2em; }
+.markdown-body h3 { font-size: 1.05em; }
+.markdown-body p { margin: 0.5em 0; }
+.markdown-body a { color: #2563eb; text-decoration: underline; }
+.markdown-body ul, .markdown-body ol { margin: 0.5em 0; padding-left: 1.4em; }
+.markdown-body ul { list-style: disc outside; }
+.markdown-body ol { list-style: decimal outside; }
+.markdown-body ul ul { list-style: circle outside; }
+.markdown-body ul ul ul { list-style: square outside; }
+.markdown-body li { margin: 0.25em 0; display: list-item; }
+.markdown-body blockquote { margin: 0.5em 0; padding: 0.25em 0.9em; border-left: 3px solid currentColor; }
+.markdown-body blockquote > * { opacity: 0.75; }
+.markdown-body code { background: rgba(127,127,127,0.18); padding: 0.1em 0.35em; border-radius: 4px; font-size: 0.88em; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+.markdown-body pre { background: rgba(127,127,127,0.18); padding: 0.8em 1em; border-radius: 8px; overflow-x: auto; font-size: 0.85em; }
+.markdown-body pre code { background: transparent; padding: 0; }
+.markdown-body img { max-width: 100%; border-radius: 8px; }
+.markdown-body hr { border: none; border-top: 1px solid currentColor; opacity: 0.2; margin: 1em 0; }
+.markdown-body table { border-collapse: collapse; width: 100%; margin: 0.5em 0; }
+.markdown-body th, .markdown-body td { border: 1px solid rgba(127,127,127,0.3); padding: 0.4em 0.6em; text-align: left; }
+.markdown-blend a { color: inherit; text-decoration: underline; }
+.page-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+  background: rgba(255,255,255,0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+  z-index: 100;
+  color: #111827;
+}
+.page-header a { color: inherit; text-decoration: none; display: flex; align-items: center; }
+.page-header .title {
+  font-size: 0.95rem;
+  font-weight: 600;
+  max-width: 55%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.page-header .back-btn {
+  width: 36px;
+  height: 36px;
+  justify-content: center;
+  border-radius: 50%;
+  transition: background 0.15s;
+}
+.page-header .back-btn:hover { background: rgba(0,0,0,0.06); }
+  </style>
+</head>
+<body>
+  <header class="page-header">
+    <a class="back-btn" href="${backHref}" aria-label="返回">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+    </a>
+    <span class="title">${escapeHtml(pageTitle)}</span>
+    <a href="${backHref}" aria-label="${escapeHtml(displayName)}">
+      ${avatarHtml}
+    </a>
+  </header>
+  <div class="bio-container">
+    <div class="links" style="margin-top:0;">
+      ${blocksHtml || '<p style="text-align:center;opacity:0.5;">尚無內容</p>'}
+    </div>
+    <p class="footer">Powered by CloudBio</p>
+  </div>
+</body>
+</html>`;
+}
+
 export function renderBioPage(
   user: User,
   blocks: Block[],
@@ -166,7 +317,7 @@ export function renderBioPage(
   const profileStyle = appearance?.profileStyle || "blend";
   const isCard = profileStyle === "card";
 
-  const blocksHtml = blocks.map((b) => renderBlock(b, appearance)).filter(Boolean).join("\n      ");
+  const blocksHtml = blocks.map((b) => renderBlock(b, appearance, { username: user.username })).filter(Boolean).join("\n      ");
 
   const avatarHtml = user.avatarUrl
     ? `<img class="avatar" src="${escapeHtml(user.avatarUrl)}" alt="${escapeHtml(displayName)}" />`
@@ -201,6 +352,30 @@ ${css}
 .bio-anim-shake:hover { animation: bio-shake 0.4s ease-in-out; }
 .banner-carousel::-webkit-scrollbar { display: none; }
 .banner-carousel { scrollbar-width: none; }
+.markdown-body > :first-child { margin-top: 0; }
+.markdown-body > :last-child { margin-bottom: 0; }
+.markdown-body h1, .markdown-body h2, .markdown-body h3 { margin: 1em 0 0.5em; font-weight: 700; line-height: 1.3; }
+.markdown-body h1 { font-size: 1.4em; }
+.markdown-body h2 { font-size: 1.2em; }
+.markdown-body h3 { font-size: 1.05em; }
+.markdown-body p { margin: 0.5em 0; }
+.markdown-body a { color: #2563eb; text-decoration: underline; }
+.markdown-body ul, .markdown-body ol { margin: 0.5em 0; padding-left: 1.4em; }
+.markdown-body ul { list-style: disc outside; }
+.markdown-body ol { list-style: decimal outside; }
+.markdown-body ul ul { list-style: circle outside; }
+.markdown-body ul ul ul { list-style: square outside; }
+.markdown-body li { margin: 0.25em 0; display: list-item; }
+.markdown-body blockquote { margin: 0.5em 0; padding: 0.25em 0.9em; border-left: 3px solid currentColor; }
+.markdown-body blockquote > * { opacity: 0.75; }
+.markdown-body code { background: rgba(127,127,127,0.18); padding: 0.1em 0.35em; border-radius: 4px; font-size: 0.88em; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+.markdown-body pre { background: rgba(127,127,127,0.18); padding: 0.8em 1em; border-radius: 8px; overflow-x: auto; font-size: 0.85em; }
+.markdown-body pre code { background: transparent; padding: 0; }
+.markdown-body img { max-width: 100%; border-radius: 8px; }
+.markdown-body hr { border: none; border-top: 1px solid currentColor; opacity: 0.2; margin: 1em 0; }
+.markdown-body table { border-collapse: collapse; width: 100%; margin: 0.5em 0; }
+.markdown-body th, .markdown-body td { border: 1px solid rgba(127,127,127,0.3); padding: 0.4em 0.6em; text-align: left; }
+.markdown-blend a { color: inherit; text-decoration: underline; }
 .profile-card {
   background: rgba(255,255,255,0.85);
   backdrop-filter: blur(12px);

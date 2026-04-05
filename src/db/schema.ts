@@ -14,11 +14,25 @@ export const users = sqliteTable("users", {
   updatedAt: text("updated_at").default(sql`(datetime('now'))`),
 });
 
+export const pages = sqliteTable("pages", {
+  id: text("id").primaryKey(),
+  userId: text("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  slug: text("slug").notNull(), // '' for the default (main) page, otherwise the sub-page slug
+  title: text("title"),
+  sortOrder: real("sort_order").notNull().default(0),
+  isDefault: integer("is_default", { mode: "boolean" }).notNull().default(false),
+  createdAt: text("created_at").default(sql`(datetime('now'))`),
+  updatedAt: text("updated_at").default(sql`(datetime('now'))`),
+});
+
 export const blocks = sqliteTable("blocks", {
   id: text("id").primaryKey(),
   userId: text("user_id")
     .notNull()
     .references(() => users.id, { onDelete: "cascade" }),
+  pageId: text("page_id").references(() => pages.id, { onDelete: "cascade" }),
   type: text("type").notNull(), // button | banner | square | dual_square | video | divider | text
   config: text("config").notNull(), // JSON string
   isActive: integer("is_active", { mode: "boolean" }).default(true),

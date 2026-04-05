@@ -1,12 +1,14 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "../hooks/useAuth";
 import { useBlocks } from "../hooks/useBlocks";
+import { usePages } from "../hooks/usePages";
 import { useAppearance } from "../hooks/useAppearance";
 import DashboardLayout from "../components/DashboardLayout";
 import BlockList from "../components/BlockList";
 import BlockTypeSelector from "../components/BlockTypeSelector";
 import BlockEditor from "../components/BlockEditor";
 import ProfileEditor from "../components/ProfileEditor";
+import PageTabs from "../components/PageTabs";
 import { getDefaultConfig, type BlockType } from "../../lib/block-types";
 import type { SocialLink } from "../../lib/social-platforms";
 import { Button } from "../components/ui/button";
@@ -15,7 +17,27 @@ import { getSocialIcon } from "../components/SocialLinksEditor";
 
 export default function Dashboard() {
   const { user } = useAuth();
-  const { blocks, isLoading, mutate, createBlock, updateBlock, deleteBlock, reorderBlock } = useBlocks();
+  const { pages, defaultPage, createPage, updatePage, deletePage } = usePages();
+  const [activePageId, setActivePageId] = useState<string | null>(null);
+
+  // Default to the main page once pages load.
+  useEffect(() => {
+    if (!activePageId && defaultPage) {
+      setActivePageId(defaultPage.id);
+    }
+  }, [defaultPage, activePageId]);
+
+  // If the active page is deleted, fall back to the main page.
+  useEffect(() => {
+    if (activePageId && !pages.some((p) => p.id === activePageId) && defaultPage) {
+      setActivePageId(defaultPage.id);
+    }
+  }, [pages, activePageId, defaultPage]);
+
+  const activePage = pages.find((p) => p.id === activePageId) ?? null;
+  const isMainPage = activePage?.isDefault ?? true;
+
+  const { blocks, isLoading, mutate, createBlock, updateBlock, deleteBlock, reorderBlock } = useBlocks(activePageId ?? undefined);
   const { appearance } = useAppearance();
   const [showSelector, setShowSelector] = useState(false);
   const [newBlockType, setNewBlockType] = useState<BlockType | null>(null);
@@ -37,7 +59,21 @@ export default function Dashboard() {
     <DashboardLayout>
       <div className="max-w-2xl mx-auto p-6 space-y-4" style={{ fontFamily: `'${appearance?.fontFamily ?? "Noto Sans TC"}', system-ui` }}>
 
-        {/* Profile Preview Card */}
+        {/* Page tabs */}
+        <PageTabs
+          pages={pages}
+          activePageId={activePageId}
+          onSelect={setActivePageId}
+          onCreate={async (slug, title) => {
+            const page = await createPage(slug, title);
+            setActivePageId(page.id);
+          }}
+          onUpdate={async (id, payload) => { await updatePage(id, payload); }}
+          onDelete={async (id) => { await deletePage(id); }}
+        />
+
+        {/* Profile Preview Card — only on main page */}
+        {isMainPage && (
         <div className="relative group">
           <div className="relative">
             <Button
@@ -89,6 +125,22 @@ export default function Dashboard() {
             </div>
           </div>
         </div>
+        )}
+
+        {/* Sub-page header preview */}
+        {!isMainPage && activePage && (
+          <div className="rounded-2xl bg-muted/40 px-4 py-3 flex items-center justify-between">
+            <div className="min-w-0">
+              <p className="text-xs text-muted-foreground">子頁網址</p>
+              <p className="text-sm font-medium truncate">
+                /{user?.username}/{activePage.slug}
+              </p>
+            </div>
+            {activePage.title && (
+              <p className="text-sm text-muted-foreground truncate max-w-[40%]">{activePage.title}</p>
+            )}
+          </div>
+        )}
 
         <ProfileEditor open={showProfileEditor} onClose={() => setShowProfileEditor(false)} />
 
@@ -112,6 +164,7 @@ export default function Dashboard() {
         <Button
           variant="outline"
           className="w-full border-dashed"
+          disabled={!activePageId}
           onClick={() => {
             setShowSelector(true);
             setNewBlockType(null);

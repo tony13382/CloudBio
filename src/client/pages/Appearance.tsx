@@ -1,4 +1,5 @@
 import { useBlocks } from "../hooks/useBlocks";
+import { usePages } from "../hooks/usePages";
 import { useAppearance } from "../hooks/useAppearance";
 import DashboardLayout from "../components/DashboardLayout";
 import ThemeEditor from "../components/ThemeEditor";
@@ -12,7 +13,8 @@ export default function Appearance() {
   const { user } = useAuth();
   let socialLinks: SocialLink[] = [];
   try { socialLinks = user?.socialLinks ? JSON.parse(user.socialLinks) : []; } catch { /* */ }
-  const { blocks } = useBlocks();
+  const { defaultPage } = usePages();
+  const { blocks } = useBlocks(defaultPage?.id);
   const { appearance, isLoading, updateAppearance } = useAppearance();
 
   return (

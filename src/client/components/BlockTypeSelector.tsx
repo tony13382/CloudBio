@@ -8,6 +8,7 @@ import {
   Play,
   Minus,
   FileText,
+  FileCode,
 } from "lucide-react";
 
 type Props = {
@@ -24,6 +25,7 @@ const ICONS: Record<BlockType, React.ReactNode> = {
   video: <Play className="h-6 w-6" />,
   divider: <Minus className="h-6 w-6" />,
   text: <FileText className="h-6 w-6" />,
+  markdown: <FileCode className="h-6 w-6" />,
 };
 
 export default function BlockTypeSelector({ open, onSelect, onClose }: Props) {

@@ -4,6 +4,7 @@ import type { Env } from "../lib/types";
 import { createDb } from "../db";
 import { UserService } from "../services/user.service";
 import { signJwt, verifyJwt } from "../middleware/auth";
+import { isReservedUsername } from "../lib/reserved-slugs";
 
 const authRoutes = new Hono<Env>();
 
@@ -41,6 +42,10 @@ authRoutes.post("/register", async (c) => {
   const parsed = registerSchema.safeParse(body);
   if (!parsed.success) {
     return c.json({ error: "請填寫有效的信箱、使用者名稱（3-30字元）和密碼（至少8字元）" }, 400);
+  }
+
+  if (isReservedUsername(parsed.data.username)) {
+    return c.json({ error: "此使用者名稱為系統保留字，請換一個" }, 400);
   }
 
   // Check allowed emails

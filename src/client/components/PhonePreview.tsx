@@ -4,6 +4,7 @@ import { parseConfig } from "../hooks/useBlocks";
 import { FONT_SIZE_MAP, type FontSize } from "../../lib/block-types";
 import type { SocialLink } from "../../lib/social-platforms";
 import { getSocialIcon } from "./SocialLinksEditor";
+import { renderMarkdown } from "../../lib/markdown";
 
 function resolveFontSize(key: string): string {
   return FONT_SIZE_MAP[key as FontSize] || "1rem";
@@ -171,6 +172,31 @@ function BlockRenderer({ block, appearance }: { block: Block; appearance: Appear
     case "divider": {
       const style = String(c.style || "solid");
       return <hr className="opacity-20 my-1" style={{ borderTop: `1px ${style} ${textColor}` }} />;
+    }
+    case "markdown": {
+      const source = String(c.content || "");
+      if (!source) return null;
+      const mdStyle = String(c.style || "card");
+      const wrapper: React.CSSProperties = mdStyle === "card"
+        ? {
+            background: "rgba(255,255,255,0.85)",
+            backdropFilter: "blur(12px)",
+            WebkitBackdropFilter: "blur(12px)",
+            borderRadius: 20,
+            padding: 12,
+            color: "#111827",
+            boxShadow: "0 1px 3px rgba(0,0,0,0.08)",
+            fontSize: "0.7rem",
+            lineHeight: 1.5,
+          }
+        : { background: "transparent", padding: 0, color: textColor, fontSize: "0.7rem", lineHeight: 1.5 };
+      return (
+        <div
+          className={`markdown-body markdown-${mdStyle}`}
+          style={wrapper}
+          dangerouslySetInnerHTML={{ __html: renderMarkdown(source) }}
+        />
+      );
     }
     case "text": {
       const variant = String(c.variant || "paragraph");

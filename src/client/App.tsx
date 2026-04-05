@@ -21,6 +21,7 @@ export default function App() {
         }
       />
       <Route path="/:username" element={<BioPage />} />
+      <Route path="/:username/:pageSlug" element={<BioPage />} />
     </Routes>
   );
 }

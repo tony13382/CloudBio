@@ -5,6 +5,7 @@ import { createDb } from "../db";
 import { UserService } from "../services/user.service";
 import { invalidateCache } from "../lib/kv-cache";
 import { signJwt } from "../middleware/auth";
+import { isReservedUsername } from "../lib/reserved-slugs";
 
 const profileRoutes = new Hono<Env>();
 
@@ -29,6 +30,10 @@ profileRoutes.patch("/", async (c) => {
   const parsed = updateSchema.safeParse(body);
   if (!parsed.success) {
     return c.json({ error: "Invalid input", details: parsed.error.issues }, 400);
+  }
+
+  if (parsed.data.username && isReservedUsername(parsed.data.username)) {
+    return c.json({ error: "此使用者名稱為系統保留字，請換一個" }, 400);
   }
 
   const userId = c.get("userId");

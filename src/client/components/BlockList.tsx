@@ -22,6 +22,7 @@ import { parseConfig } from "../hooks/useBlocks";
 import type { Appearance } from "../hooks/useAppearance";
 import { FONT_SIZE_MAP, type FontSize, type BlockType } from "../../lib/block-types";
 import BlockEditor from "./BlockEditor";
+import { renderMarkdown } from "../../lib/markdown";
 
 type Props = {
   blocks: Block[];
@@ -119,6 +120,30 @@ function BlockPreview({ block, appearance }: { block: Block; appearance: Appeara
       );
     }
     case "divider": return <hr className="my-1 border-0" style={{ borderTop: `1px ${String(c.style || "solid")} ${textColor}`, opacity: 0.2 }} />;
+    case "markdown": {
+      const source = String(c.content || "");
+      if (!source) return <p className="text-sm text-muted-foreground italic">Markdown 卡片（尚未填寫）</p>;
+      const mdStyle = String(c.style || "card");
+      const wrapper: React.CSSProperties = mdStyle === "card"
+        ? {
+            background: "rgba(255,255,255,0.85)",
+            backdropFilter: "blur(12px)",
+            WebkitBackdropFilter: "blur(12px)",
+            borderRadius: 20,
+            padding: 16,
+            color: "#111827",
+            boxShadow: "0 1px 3px rgba(0,0,0,0.08)",
+            lineHeight: 1.5,
+          }
+        : { background: "transparent", padding: 0, color: textColor, lineHeight: 1.5 };
+      return (
+        <div
+          className={`markdown-body markdown-${mdStyle} text-sm`}
+          style={wrapper}
+          dangerouslySetInnerHTML={{ __html: renderMarkdown(source) }}
+        />
+      );
+    }
     case "text": {
       const variant = String(c.variant || "paragraph");
       const baseFontSize = resolveFontSize(String(c.fontSize || "medium"));

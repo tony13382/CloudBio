@@ -6,6 +6,7 @@ export const BLOCK_TYPES = [
   "video",
   "divider",
   "text",
+  "markdown",
 ] as const;
 
 export type BlockType = (typeof BLOCK_TYPES)[number];
@@ -34,7 +35,9 @@ export const COLOR_PRESETS = [
 
 export type ButtonConfig = {
   title: string;
-  url: string;
+  linkType?: "url" | "page";
+  url?: string;
+  pageSlug?: string;
   subtitle?: string;
   showSubtitle?: boolean;
   imageUrl?: string;
@@ -100,6 +103,11 @@ export type TextConfig = {
   align?: "left" | "center" | "right";
 };
 
+export type MarkdownConfig = {
+  content: string;
+  style?: "blend" | "card";
+};
+
 export type BlockConfig =
   | ButtonConfig
   | BannerConfig
@@ -107,7 +115,8 @@ export type BlockConfig =
   | DualSquareConfig
   | VideoConfig
   | DividerConfig
-  | TextConfig;
+  | TextConfig
+  | MarkdownConfig;
 
 export const BLOCK_TYPE_LABELS: Record<BlockType, string> = {
   button: "文字按鈕",
@@ -117,12 +126,13 @@ export const BLOCK_TYPE_LABELS: Record<BlockType, string> = {
   video: "影片播放器",
   divider: "分隔線",
   text: "文字",
+  markdown: "Markdown 卡片",
 };
 
 export function getDefaultConfig(type: BlockType): BlockConfig {
   switch (type) {
     case "button":
-      return { title: "", url: "", filled: true, showSubtitle: false, showImage: false, fontSize: "medium", animation: "none" };
+      return { title: "", linkType: "url", url: "", filled: true, showSubtitle: false, showImage: false, fontSize: "medium", animation: "none" };
     case "banner":
       return { images: [] };
     case "square":
@@ -135,5 +145,7 @@ export function getDefaultConfig(type: BlockType): BlockConfig {
       return { style: "solid" };
     case "text":
       return { content: "", variant: "paragraph", fontSize: "medium", align: "center" };
+    case "markdown":
+      return { content: "", style: "card" };
   }
 }

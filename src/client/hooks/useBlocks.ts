@@ -5,6 +5,7 @@ import type { BlockType } from "../../lib/block-types";
 export type Block = {
   id: string;
   userId: string;
+  pageId: string | null;
   type: BlockType;
   config: string; // JSON string from DB
   isActive: boolean | null;
@@ -21,19 +22,29 @@ export function parseConfig(block: Block): Record<string, unknown> {
   }
 }
 
-export function useBlocks() {
-  const { data, error, isLoading, mutate } = useSWR<{ blocks: Block[] }>(
-    "/blocks",
-    (url: string) => api.get<{ blocks: Block[] }>(url)
+/**
+ * Fetch blocks for a specific page. When `pageId` is undefined the hook defers
+ * the request (returns empty state) — callers should pass the resolved page id
+ * once it's known (e.g. from usePages()).
+ */
+export function useBlocks(pageId: string | undefined) {
+  const key = pageId ? `/blocks?pageId=${pageId}` : null;
+  const { data, error, isLoading, mutate } = useSWR<{ blocks: Block[]; pageId: string }>(
+    key,
+    (url: string) => api.get<{ blocks: Block[]; pageId: string }>(url)
   );
 
   const createBlock = async (type: BlockType, config: Record<string, unknown>) => {
-    const res = await api.post<{ block: Block }>("/blocks", { type, config });
+    if (!pageId) throw new Error("Page not ready");
+    const res = await api.post<{ block: Block }>("/blocks", { pageId, type, config });
     await mutate();
     return res.block;
   };
 
-  const updateBlock = async (id: string, data: { config?: Record<string, unknown>; isActive?: boolean }) => {
+  const updateBlock = async (
+    id: string,
+    data: { config?: Record<string, unknown>; isActive?: boolean }
+  ) => {
     const res = await api.patch<{ block: Block }>(`/blocks/${id}`, data);
     await mutate();
     return res.block;
@@ -50,7 +61,7 @@ export function useBlocks() {
 
   return {
     blocks: data?.blocks ?? [],
-    isLoading,
+    isLoading: !!pageId && isLoading,
     isError: !!error,
     mutate,
     createBlock,
