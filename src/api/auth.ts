@@ -105,6 +105,35 @@ authRoutes.post("/login", async (c) => {
   }
 });
 
+const changePasswordSchema = z.object({
+  currentPassword: z.string().min(1),
+  newPassword: z.string().min(8),
+});
+
+authRoutes.put("/change-password", async (c) => {
+  const cookie = c.req.header("Cookie") || "";
+  const match = cookie.match(/__session=([^;]+)/);
+  const token = match?.[1];
+  if (!token) return c.json({ error: "未登入" }, 401);
+
+  try {
+    const payload = await verifyJwt(token, c.env.JWT_SECRET);
+    const body = await c.req.json();
+    const parsed = changePasswordSchema.safeParse(body);
+    if (!parsed.success) {
+      return c.json({ error: "新密碼至少需要 8 個字元" }, 400);
+    }
+
+    const db = createDb(c.env.DB);
+    const userService = new UserService(db);
+    await userService.changePassword(payload.sub, parsed.data.currentPassword, parsed.data.newPassword);
+    return c.json({ success: true });
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "修改失敗";
+    return c.json({ error: message }, 400);
+  }
+});
+
 authRoutes.post("/logout", async (c) => {
   const res = c.json({ success: true });
   clearSessionCookie(res.headers);

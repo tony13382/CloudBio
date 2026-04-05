@@ -74,6 +74,22 @@ export class UserService {
     });
   }
 
+  async changePassword(id: string, currentPassword: string, newPassword: string) {
+    const user = await this.db.query.users.findFirst({
+      where: eq(users.id, id),
+    });
+    if (!user) throw new Error("使用者不存在");
+
+    const valid = await verifyPassword(currentPassword, user.passwordHash);
+    if (!valid) throw new Error("目前密碼不正確");
+
+    const newHash = await hashPassword(newPassword);
+    await this.db
+      .update(users)
+      .set({ passwordHash: newHash, updatedAt: sql`(datetime('now'))` })
+      .where(eq(users.id, id));
+  }
+
   async updateProfile(
     id: string,
     data: { username?: string; displayName?: string; bio?: string; avatarUrl?: string; socialLinks?: { platform: string; url: string }[] }

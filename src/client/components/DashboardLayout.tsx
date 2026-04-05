@@ -4,15 +4,18 @@ import { useAuth } from "../hooks/useAuth";
 import { useAppearance } from "../hooks/useAppearance";
 import { Button } from "./ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "./ui/sheet";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "./ui/dropdown-menu";
 import ThemeEditor from "./ThemeEditor";
+import ChangePasswordDialog from "./ChangePasswordDialog";
 import React from "react";
-import { ExternalLink, LogOut, Palette, Link as LinkIcon } from "lucide-react";
+import { LogOut, KeyRound, Palette, Link as LinkIcon } from "lucide-react";
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const { user, logout } = useAuth();
   const { appearance, updateAppearance } = useAppearance();
   const navigate = useNavigate();
   const [showAppearance, setShowAppearance] = useState(false);
+  const [showChangePassword, setShowChangePassword] = useState(false);
 
   const handleLogout = async () => {
     await logout();
@@ -65,15 +68,30 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               /{user?.username}
             </a>
 
-            <Button
-              variant="ghost"
-              size="icon"
-              className="rounded-full h-9 w-9"
-              onClick={handleLogout}
-              title="登出"
-            >
-              <LogOut className="h-4 w-4" />
-            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button className="rounded-full h-9 w-9 overflow-hidden focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 ring-offset-background transition">
+                  {user?.avatarUrl ? (
+                    <img src={user.avatarUrl} alt="" className="h-full w-full object-cover" />
+                  ) : (
+                    <div className="h-full w-full bg-muted flex items-center justify-center text-sm font-bold text-muted-foreground">
+                      {(user?.displayName || user?.username || "U").charAt(0).toUpperCase()}
+                    </div>
+                  )}
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-40">
+                <DropdownMenuItem onClick={() => setShowChangePassword(true)}>
+                  <KeyRound className="h-4 w-4" />
+                  修改密碼
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={handleLogout} className="text-destructive focus:text-destructive">
+                  <LogOut className="h-4 w-4" />
+                  登出
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </div>
       </header>
@@ -92,6 +110,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           </div>
         </SheetContent>
       </Sheet>
+
+      <ChangePasswordDialog open={showChangePassword} onClose={() => setShowChangePassword(false)} />
     </div>
   );
 }
