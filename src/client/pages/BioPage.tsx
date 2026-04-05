@@ -467,7 +467,7 @@ export default function BioPage() {
         .markdown-body code { background: rgba(127,127,127,0.18); padding: 0.1em 0.35em; border-radius: 4px; font-size: 0.88em; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
         .markdown-body pre { background: rgba(127,127,127,0.18); padding: 0.8em 1em; border-radius: 8px; overflow-x: auto; font-size: 0.85em; }
         .markdown-body pre code { background: transparent; padding: 0; }
-        .markdown-body img { max-width: 100%; border-radius: 8px; }
+        .markdown-body img { display: block; width: 100%; height: auto; max-width: 100%; border-radius: 8px; }
         .markdown-body hr { border: none; border-top: 1px solid currentColor; opacity: 0.2; margin: 1em 0; }
         .markdown-body table { border-collapse: collapse; width: 100%; margin: 0.5em 0; }
         .markdown-body th, .markdown-body td { border: 1px solid currentColor; border-color: rgba(127,127,127,0.3); padding: 0.4em 0.6em; text-align: left; }

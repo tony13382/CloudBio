@@ -1,5 +1,5 @@
-const DEFAULT_MAX_WIDTH = 1200;
-const DEFAULT_MAX_HEIGHT = 1200;
+const DEFAULT_MAX_WIDTH = 1600;
+const DEFAULT_MAX_HEIGHT = 1600;
 const DEFAULT_QUALITY = 0.8;
 
 type CompressOptions = {
