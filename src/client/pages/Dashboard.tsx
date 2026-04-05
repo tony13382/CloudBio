@@ -35,7 +35,7 @@ export default function Dashboard() {
 
   return (
     <DashboardLayout>
-      <div className="max-w-2xl mx-auto p-6 space-y-4" style={{ fontFamily: `'${appearance?.fontFamily ?? "Inter"}', system-ui` }}>
+      <div className="max-w-2xl mx-auto p-6 space-y-4" style={{ fontFamily: `'${appearance?.fontFamily ?? "Noto Sans TC"}', system-ui` }}>
 
         {/* Profile Preview Card */}
         <div className="relative group">

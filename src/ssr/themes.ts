@@ -17,7 +17,7 @@ const DEFAULTS: Record<keyof Omit<Appearance, "customCss">, string> = {
   buttonStyle: "rounded",
   buttonColor: "#111827",
   buttonTextColor: "#ffffff",
-  fontFamily: "Inter",
+  fontFamily: "Noto Sans TC",
   textColor: "#111827",
 };
 

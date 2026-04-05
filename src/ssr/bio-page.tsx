@@ -160,8 +160,8 @@ export function renderBioPage(
   const css = generateCSS(appearance);
   const initial = (user.displayName || user.username).charAt(0).toUpperCase();
 
-  const fontFamily = appearance?.fontFamily || "Inter";
-  const googleFontUrl = `https://fonts.googleapis.com/css2?family=${encodeURIComponent(fontFamily)}:wght@400;500;700&display=swap`;
+  const fontFamily = appearance?.fontFamily || "Noto Sans TC";
+  const googleFontUrl = `https://fonts.googleapis.com/css2?family=${encodeURIComponent(fontFamily)}:wght@400;700&display=swap`;
 
   const profileStyle = appearance?.profileStyle || "blend";
   const isCard = profileStyle === "card";
@@ -185,7 +185,8 @@ export function renderBioPage(
   ${user.avatarUrl ? `<meta property="og:image" content="${escapeHtml(user.avatarUrl)}" />` : ""}
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="${googleFontUrl}" rel="stylesheet" />
+  <link rel="preload" href="${googleFontUrl}" as="style" onload="this.rel='stylesheet'" />
+  <noscript><link href="${googleFontUrl}" rel="stylesheet" /></noscript>
   <style>
 ${css}
 .link-btn-outline {

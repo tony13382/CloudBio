@@ -46,7 +46,7 @@ export default function ThemeEditor({ appearance, onChange }: Props) {
   const buttonStyle = appearance?.buttonStyle ?? "rounded";
   const buttonColor = appearance?.buttonColor ?? "#111827";
   const buttonTextColor = appearance?.buttonTextColor ?? "#ffffff";
-  const fontFamily = appearance?.fontFamily ?? "Inter";
+  const fontFamily = appearance?.fontFamily ?? "Noto Sans TC";
   const textColor = appearance?.textColor ?? "#111827";
   const profileStyle = appearance?.profileStyle ?? "blend";
   const bgBlur = appearance?.bgBlur ?? false;

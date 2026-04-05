@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
 import { api } from "../api";
 import type { Block } from "../hooks/useBlocks";
@@ -339,7 +339,22 @@ export default function BioPage() {
   const { user, blocks, appearance } = data;
   const displayName = user.displayName || `@${user.username}`;
   const initial = (user.displayName || user.username).charAt(0).toUpperCase();
-  const fontFamily = appearance?.fontFamily || "Inter";
+  const fontFamily = appearance?.fontFamily || "Noto Sans TC";
+
+  // Non-blocking font loading
+  const fontLinkRef = useRef<HTMLLinkElement | null>(null);
+  useEffect(() => {
+    const url = `https://fonts.googleapis.com/css2?family=${encodeURIComponent(fontFamily)}:wght@400;700&display=swap`;
+    if (fontLinkRef.current) fontLinkRef.current.remove();
+    const link = document.createElement("link");
+    link.rel = "stylesheet";
+    link.href = url;
+    link.media = "print";
+    link.onload = () => { link.media = "all"; };
+    document.head.appendChild(link);
+    fontLinkRef.current = link;
+    return () => { link.remove(); };
+  }, [fontFamily]);
   const textColor = appearance?.textColor || "#111827";
   const bgType = appearance?.bgType ?? "solid";
   const bgValue = appearance?.bgValue ?? "#f8f9fa";
@@ -362,7 +377,6 @@ export default function BioPage() {
   return (
     <>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=${encodeURIComponent(fontFamily)}:wght@400;500;700&display=swap');
         @keyframes bio-pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.03)} }
         @keyframes bio-bounce { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-4px)} }
         body { margin: 0; ${bgCss} min-height: 100vh; }

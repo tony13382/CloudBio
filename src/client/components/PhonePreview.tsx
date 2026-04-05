@@ -202,7 +202,7 @@ function BlockRenderer({ block, appearance }: { block: Block; appearance: Appear
 export default function PhonePreview({ username, displayName, bio, blocks, appearance, socialLinks = [] }: Props) {
   const bgType = appearance?.bgType ?? "solid";
   const bgValue = appearance?.bgValue ?? "#f8f9fa";
-  const fontFamily = appearance?.fontFamily ?? "Inter";
+  const fontFamily = appearance?.fontFamily ?? "Noto Sans TC";
   const textColor = appearance?.textColor ?? "#111827";
   const name = displayName || `@${username}`;
   const initial = (displayName || username).charAt(0).toUpperCase();

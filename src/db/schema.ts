@@ -39,7 +39,7 @@ export const appearances = sqliteTable("appearances", {
   buttonStyle: text("button_style").default("rounded"),
   buttonColor: text("button_color").default("#000000"),
   buttonTextColor: text("button_text_color").default("#ffffff"),
-  fontFamily: text("font_family").default("Inter"),
+  fontFamily: text("font_family").default("Noto Sans TC"),
   textColor: text("text_color").default("#000000"),
   profileStyle: text("profile_style").default("blend"),
   bgBlur: integer("bg_blur", { mode: "boolean" }).default(false),
