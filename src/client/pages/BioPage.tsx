@@ -226,7 +226,7 @@ function BlockRenderer({ block, appearance, username }: { block: Block; appearan
             backdropFilter: "blur(12px)",
             WebkitBackdropFilter: "blur(12px)",
             borderRadius: 20,
-            padding: 16,
+            padding: "20px 28px",
             color: "#111827",
             boxShadow: "0 1px 3px rgba(0,0,0,0.08)",
           }

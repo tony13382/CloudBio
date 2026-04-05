@@ -183,7 +183,7 @@ function BlockRenderer({ block, appearance }: { block: Block; appearance: Appear
             backdropFilter: "blur(12px)",
             WebkitBackdropFilter: "blur(12px)",
             borderRadius: 20,
-            padding: 12,
+            padding: "14px 20px",
             color: "#111827",
             boxShadow: "0 1px 3px rgba(0,0,0,0.08)",
             fontSize: "0.7rem",

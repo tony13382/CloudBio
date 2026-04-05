@@ -144,7 +144,7 @@ function renderBlock(block: Block, appearance: Appearance | null, ctx: { usernam
       const html = renderMarkdown(source);
       const mdStyle = String(c.style || "card");
       const wrapperStyle = mdStyle === "card"
-        ? "background:rgba(255,255,255,0.85);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-radius:20px;padding:16px;color:#111827;box-shadow:0 1px 3px rgba(0,0,0,0.08);font-size:0.95rem;line-height:1.6;"
+        ? "background:rgba(255,255,255,0.85);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-radius:20px;padding:20px 28px;color:#111827;box-shadow:0 1px 3px rgba(0,0,0,0.08);font-size:0.95rem;line-height:1.6;"
         : "background:transparent;padding:0;font-size:0.95rem;line-height:1.6;";
       return `<div class="markdown-body markdown-${escapeHtml(mdStyle)}" style="${wrapperStyle}">${html}</div>`;
     }
