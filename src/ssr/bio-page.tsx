@@ -181,7 +181,7 @@ export function renderBioPage(
   <meta name="description" content="${escapeHtml(user.bio || `${displayName} 的個人連結頁面`)}" />
   <meta property="og:title" content="${escapeHtml(displayName)}" />
   <meta property="og:description" content="${escapeHtml(user.bio || `${displayName} 的個人連結頁面`)}" />
-  ${user.avatarUrl ? `<link rel="icon" href="${escapeHtml(user.avatarUrl)}" />` : ""}
+  ${user.avatarUrl ? `<link rel="icon" href="${escapeHtml(user.avatarUrl)}" />` : `<link rel="icon" type="image/png" href="/favicon.png" />`}
   ${user.avatarUrl ? `<meta property="og:image" content="${escapeHtml(user.avatarUrl)}" />` : ""}
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
