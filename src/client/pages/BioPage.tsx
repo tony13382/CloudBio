@@ -249,7 +249,7 @@ function ShareQRButtons({ pageUrl, displayName, isCard, textColor }: { pageUrl: 
 
   const handleShare = async () => {
     if (navigator.share) {
-      await navigator.share({ title: displayName, url: pageUrl }).catch(() => {});
+      await navigator.share({ title: displayName, url: pageUrl }).catch(() => { });
     } else {
       await navigator.clipboard.writeText(pageUrl);
       alert("已複製連結！");
@@ -280,7 +280,7 @@ function ShareQRButtons({ pageUrl, displayName, isCard, textColor }: { pageUrl: 
             <DialogTitle className="text-center">QR Code</DialogTitle>
             <DialogDescription className="text-center">掃描 QR Code 開啟頁面</DialogDescription>
           </DialogHeader>
-          <div className="flex flex-col items-center gap-4 py-4">
+          <div className="flex flex-col items-center gap-4 pt-4">
             <QRCodeSVG value={pageUrl} size={200} level="M" />
             <p className="text-xs text-muted-foreground break-all text-center">{pageUrl}</p>
             <Button className="w-full" onClick={() => { navigator.clipboard.writeText(pageUrl); }}>
@@ -405,7 +405,7 @@ export default function BioPage() {
               background: "rgba(255,255,255,0.85)",
               backdropFilter: "blur(12px)",
               borderRadius: 20,
-              padding: "28px 24px",
+              padding: "40px 24px 28px 24px",
               boxShadow: "0 1px 3px rgba(0,0,0,0.08)",
               color: "#111827",
             } : {}),
