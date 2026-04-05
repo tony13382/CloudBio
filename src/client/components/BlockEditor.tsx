@@ -12,18 +12,21 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Separator } from "./ui/separator";
 import { Tabs, TabsList, TabsTrigger } from "./ui/tabs";
 import { cn } from "../lib/utils";
-import { Plus, Trash2 } from "lucide-react";
+import { Plus, Trash2, Eye, EyeOff } from "lucide-react";
 import ImageUploader from "./ImageUploader";
 
 type Props = {
   open: boolean;
   type: BlockType;
   config: Record<string, unknown>;
+  isActive?: boolean;
   onSave: (config: Record<string, unknown>) => Promise<void>;
+  onToggleActive?: () => void;
+  onDelete?: () => void;
   onClose: () => void;
 };
 
-export default function BlockEditor({ open, type, config, onSave, onClose }: Props) {
+export default function BlockEditor({ open, type, config, isActive, onSave, onToggleActive, onDelete, onClose }: Props) {
   const [data, setData] = useState(config);
   const [loading, setLoading] = useState(false);
 
@@ -87,13 +90,30 @@ export default function BlockEditor({ open, type, config, onSave, onClose }: Pro
 
           <Separator />
 
-          <div className="flex gap-2 justify-end">
-            <Button type="button" variant="ghost" onClick={onClose}>
-              取消
-            </Button>
-            <Button type="submit" disabled={loading}>
-              {loading ? "儲存中..." : "儲存"}
-            </Button>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-1">
+              {onToggleActive && (
+                <Button type="button" variant="ghost" size="sm" onClick={onToggleActive}
+                  className={isActive ? "text-green-600" : "text-muted-foreground"}>
+                  {isActive ? <Eye className="h-4 w-4 mr-1.5" /> : <EyeOff className="h-4 w-4 mr-1.5" />}
+                  {isActive ? "已啟用" : "已停用"}
+                </Button>
+              )}
+              {onDelete && (
+                <Button type="button" variant="ghost" size="sm" className="text-destructive hover:text-destructive" onClick={onDelete}>
+                  <Trash2 className="h-4 w-4 mr-1.5" />
+                  刪除
+                </Button>
+              )}
+            </div>
+            <div className="flex gap-2">
+              <Button type="button" variant="ghost" onClick={onClose}>
+                取消
+              </Button>
+              <Button type="submit" disabled={loading}>
+                {loading ? "儲存中..." : "儲存"}
+              </Button>
+            </div>
           </div>
         </form>
       </DialogContent>

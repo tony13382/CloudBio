@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { useState, useCallback, useRef } from "react";
 import {
   DndContext,
   closestCenter,
-  PointerSensor,
+  MouseSensor,
+  TouchSensor,
   useSensor,
   useSensors,
   DragOverlay,
@@ -21,8 +22,6 @@ import { parseConfig } from "../hooks/useBlocks";
 import type { Appearance } from "../hooks/useAppearance";
 import { FONT_SIZE_MAP, type FontSize, type BlockType } from "../../lib/block-types";
 import BlockEditor from "./BlockEditor";
-import { Button } from "./ui/button";
-import { GripVertical, Pencil, Trash2, Eye, EyeOff } from "lucide-react";
 
 type Props = {
   blocks: Block[];
@@ -145,13 +144,8 @@ function BlockPreview({ block, appearance }: { block: Block; appearance: Appeara
 
 function DragOverlayItem({ block, appearance }: { block: Block; appearance: Appearance | null }) {
   return (
-    <div className="flex items-start gap-0.5 bg-background/90 backdrop-blur rounded-lg shadow-lg ring-2 ring-primary/20 p-1 max-w-2xl">
-      <div className="shrink-0 pt-1.5 p-0.5 text-muted-foreground">
-        <GripVertical className="h-4 w-4" />
-      </div>
-      <div className="flex-1 min-w-0 p-1.5">
-        <BlockPreview block={block} appearance={appearance} />
-      </div>
+    <div className="bg-background/90 backdrop-blur rounded-lg shadow-lg ring-2 ring-primary/20 p-1.5 max-w-2xl">
+      <BlockPreview block={block} appearance={appearance} />
     </div>
   );
 }
@@ -171,6 +165,17 @@ function SortableItem({
 }) {
   const [editing, setEditing] = useState(false);
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: block.id });
+  const pointerDownTime = useRef(0);
+
+  const handlePointerDown = useCallback(() => {
+    pointerDownTime.current = Date.now();
+  }, []);
+
+  const handleClick = useCallback(() => {
+    if (Date.now() - pointerDownTime.current < 300) {
+      setEditing(true);
+    }
+  }, []);
 
   return (
     <>
@@ -181,50 +186,23 @@ function SortableItem({
           transition,
           opacity: isDragging ? 0.25 : 1,
         }}
-        className="flex items-start gap-0.5 group relative"
+        className={`relative rounded-lg p-1.5 select-none touch-manipulation cursor-pointer transition-all ${isDragging ? "shadow-lg ring-2 ring-primary/20" : ""} ${!block.isActive ? "opacity-40" : ""}`}
+        {...attributes}
+        {...listeners}
+        onPointerDown={handlePointerDown}
+        onClick={handleClick}
       >
-        {/* Drag handle */}
-        <div
-          {...attributes}
-          {...listeners}
-          className="shrink-0 pt-2 px-0.5 cursor-grab active:cursor-grabbing touch-none select-none text-transparent group-hover:text-muted-foreground/40 hover:!text-muted-foreground transition-colors"
-          role="button"
-          tabIndex={0}
-        >
-          <GripVertical className="h-5 w-5" />
-        </div>
-
-        {/* Block content */}
-        <div
-          className={`flex-1 min-w-0 relative rounded-lg border border-transparent hover:border-border p-1.5 transition-colors cursor-pointer ${!block.isActive ? "opacity-40" : ""}`}
-          onClick={() => setEditing(true)}
-        >
-          <BlockPreview block={block} appearance={appearance} />
-
-          {/* Hover toolbar */}
-          <div className="absolute -top-3 right-1 flex items-center gap-0.5 bg-background border rounded-md shadow-sm px-1 py-0.5 opacity-0 group-hover:opacity-100 transition-opacity z-10">
-            <Button variant="ghost" size="icon" className="h-6 w-6"
-              onClick={(e) => { e.stopPropagation(); onUpdate(block.id, { isActive: !block.isActive }); }}
-              title={block.isActive ? "停用" : "啟用"}>
-              {block.isActive ? <Eye className="h-3 w-3 text-green-600" /> : <EyeOff className="h-3 w-3 text-muted-foreground" />}
-            </Button>
-            <Button variant="ghost" size="icon" className="h-6 w-6"
-              onClick={(e) => { e.stopPropagation(); setEditing(true); }}>
-              <Pencil className="h-3 w-3" />
-            </Button>
-            <Button variant="ghost" size="icon" className="h-6 w-6 hover:text-destructive"
-              onClick={(e) => { e.stopPropagation(); onDelete(block.id); }}>
-              <Trash2 className="h-3 w-3" />
-            </Button>
-          </div>
-        </div>
+        <BlockPreview block={block} appearance={appearance} />
       </div>
 
       <BlockEditor
         open={editing}
         type={block.type as BlockType}
         config={parseConfig(block)}
+        isActive={block.isActive ?? true}
         onSave={async (config) => { await onUpdate(block.id, { config }); setEditing(false); }}
+        onToggleActive={() => onUpdate(block.id, { isActive: !block.isActive })}
+        onDelete={async () => { await onDelete(block.id); setEditing(false); }}
         onClose={() => setEditing(false)}
       />
     </>
@@ -237,7 +215,8 @@ export default function BlockList({ blocks, appearance, onUpdate, onDelete, onRe
   const [activeId, setActiveId] = useState<string | null>(null);
 
   const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 8 } })
+    useSensor(MouseSensor, { activationConstraint: { distance: 8 } }),
+    useSensor(TouchSensor, { activationConstraint: { delay: 300, tolerance: 8 } })
   );
 
   const handleDragStart = (event: DragStartEvent) => {

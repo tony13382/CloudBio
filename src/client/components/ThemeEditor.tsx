@@ -3,6 +3,7 @@ import { Label } from "./ui/label";
 import { Input } from "./ui/input";
 import { Switch } from "./ui/switch";
 import { Separator } from "./ui/separator";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
 import { cn } from "../lib/utils";
 import ImageUploader from "./ImageUploader";
 
@@ -18,13 +19,10 @@ const BUTTON_STYLES = [
 ];
 
 const FONTS = [
-  "Inter",
-  "Noto Sans TC",
-  "Poppins",
-  "Roboto",
-  "Playfair Display",
-  "Space Grotesk",
-  "DM Sans",
+  { value: "Noto Sans TC", label: "黑體" },
+  { value: "Noto Serif TC", label: "襯線體" },
+  { value: "Zen Maru Gothic", label: "圓體" },
+  { value: "JetBrains Mono", label: "等寬體" },
 ];
 
 const BG_TYPES = [
@@ -218,23 +216,18 @@ export default function ThemeEditor({ appearance, onChange }: Props) {
       {/* Font */}
       <section>
         <Label className="text-sm font-semibold">字體</Label>
-        <div className="grid grid-cols-1 gap-1.5 mt-3">
-          {FONTS.map((f) => (
-            <button
-              key={f}
-              onClick={() => onChange({ fontFamily: f })}
-              className={cn(
-                "px-4 py-2.5 text-sm text-left rounded-lg font-medium transition-colors cursor-pointer",
-                fontFamily === f
-                  ? "bg-primary text-primary-foreground"
-                  : "bg-secondary/50 text-secondary-foreground hover:bg-secondary"
-              )}
-              style={{ fontFamily: `'${f}', system-ui` }}
-            >
-              {f}
-            </button>
-          ))}
-        </div>
+        <Select value={fontFamily} onValueChange={(v) => onChange({ fontFamily: v })}>
+          <SelectTrigger className="mt-3" style={{ fontFamily: `'${fontFamily}', system-ui` }}>
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {FONTS.map((f) => (
+              <SelectItem key={f.value} value={f.value} style={{ fontFamily: `'${f.value}', system-ui` }}>
+                {f.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </section>
     </div>
   );

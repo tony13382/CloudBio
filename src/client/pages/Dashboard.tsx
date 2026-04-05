@@ -38,11 +38,8 @@ export default function Dashboard() {
       <div className="max-w-2xl mx-auto p-6 space-y-4" style={{ fontFamily: `'${appearance?.fontFamily ?? "Inter"}', system-ui` }}>
 
         {/* Profile Preview Card */}
-        <div className="relative group flex items-start gap-0.5">
-          {/* Spacer to align with block drag handles */}
-          <div className="w-5 shrink-0" />
-
-          <div className="flex-1 min-w-0 relative">
+        <div className="relative group">
+          <div className="relative">
             <Button
               variant="ghost"
               size="sm"
