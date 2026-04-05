@@ -90,7 +90,7 @@ export type DualSquareConfig = {
 
 export type VideoConfig = { youtubeUrl: string };
 
-export type DividerConfig = { style?: "solid" | "dashed" | "dotted" };
+export type DividerConfig = { style?: "solid" | "dashed" | "dotted" | "blank" };
 
 export type TextConfig = {
   content: string;

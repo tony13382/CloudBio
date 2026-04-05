@@ -119,7 +119,13 @@ function BlockPreview({ block, appearance }: { block: Block; appearance: Appeara
         </div>
       );
     }
-    case "divider": return <hr className="my-1 border-0" style={{ borderTop: `1px ${String(c.style || "solid")} ${textColor}`, opacity: 0.2 }} />;
+    case "divider": {
+      const style = String(c.style || "solid");
+      if (style === "blank") {
+        return <div className="h-6 border border-dashed border-muted-foreground/20 rounded flex items-center justify-center text-[10px] text-muted-foreground/50">空白</div>;
+      }
+      return <hr className="my-1 border-0" style={{ borderTop: `1px ${style} ${textColor}`, opacity: 0.2 }} />;
+    }
     case "markdown": {
       const source = String(c.content || "");
       if (!source) return <p className="text-sm text-muted-foreground italic">Markdown 卡片（尚未填寫）</p>;

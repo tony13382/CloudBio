@@ -136,6 +136,9 @@ function renderBlock(block: Block, appearance: Appearance | null, ctx: { usernam
     }
     case "divider": {
       const style = String(c.style || "solid");
+      if (style === "blank") {
+        return `<div style="height:1.5rem;" aria-hidden="true"></div>`;
+      }
       return `<hr style="border:none;border-top:1px ${escapeHtml(style)} currentColor;opacity:0.2;margin:0.5rem 0;" />`;
     }
     case "markdown": {

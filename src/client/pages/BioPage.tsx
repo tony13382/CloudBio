@@ -213,7 +213,11 @@ function BlockRenderer({ block, appearance, username }: { block: Block; appearan
       );
     }
     case "divider": {
-      return <hr style={{ border: "none", borderTop: `1px ${String(c.style || "solid")} currentColor`, opacity: 0.2, margin: "0.5rem 0" }} />;
+      const style = String(c.style || "solid");
+      if (style === "blank") {
+        return <div style={{ height: "1.5rem" }} aria-hidden />;
+      }
+      return <hr style={{ border: "none", borderTop: `1px ${style} currentColor`, opacity: 0.2, margin: "0.5rem 0" }} />;
     }
     case "markdown": {
       const source = String(c.content || "");

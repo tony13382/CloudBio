@@ -84,6 +84,7 @@ export default function BlockEditor({ open, type, config, isActive, onSave, onTo
                   <SelectItem value="solid">實線</SelectItem>
                   <SelectItem value="dashed">虛線</SelectItem>
                   <SelectItem value="dotted">點線</SelectItem>
+                  <SelectItem value="blank">空白</SelectItem>
                 </SelectContent>
               </Select>
             </div>

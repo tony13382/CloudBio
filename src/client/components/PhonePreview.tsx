@@ -171,6 +171,9 @@ function BlockRenderer({ block, appearance }: { block: Block; appearance: Appear
     }
     case "divider": {
       const style = String(c.style || "solid");
+      if (style === "blank") {
+        return <div style={{ height: "1.2rem" }} aria-hidden />;
+      }
       return <hr className="opacity-20 my-1" style={{ borderTop: `1px ${style} ${textColor}` }} />;
     }
     case "markdown": {
