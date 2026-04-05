@@ -320,6 +320,28 @@ export default function BioPage() {
       .finally(() => setLoading(false));
   }, [username]);
 
+  const displayName = data?.user.displayName || (data ? `@${data.user.username}` : "");
+  const fontFamily = data?.appearance?.fontFamily || "Noto Sans TC";
+
+  useEffect(() => {
+    if (displayName) document.title = `${displayName}．CloudBio`;
+  }, [displayName]);
+
+  const fontLinkRef = useRef<HTMLLinkElement | null>(null);
+  useEffect(() => {
+    if (!data) return;
+    const url = `https://fonts.googleapis.com/css2?family=${encodeURIComponent(fontFamily)}:wght@400;700&display=swap`;
+    if (fontLinkRef.current) fontLinkRef.current.remove();
+    const link = document.createElement("link");
+    link.rel = "stylesheet";
+    link.href = url;
+    link.media = "print";
+    link.onload = () => { link.media = "all"; };
+    document.head.appendChild(link);
+    fontLinkRef.current = link;
+    return () => { link.remove(); };
+  }, [fontFamily, data]);
+
   if (loading) {
     return (
       <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
@@ -337,26 +359,7 @@ export default function BioPage() {
   }
 
   const { user, blocks, appearance } = data;
-  const displayName = user.displayName || `@${user.username}`;
   const initial = (user.displayName || user.username).charAt(0).toUpperCase();
-  const fontFamily = appearance?.fontFamily || "Noto Sans TC";
-
-  useEffect(() => { document.title = `${displayName}．CloudBio`; }, [displayName]);
-
-  // Non-blocking font loading
-  const fontLinkRef = useRef<HTMLLinkElement | null>(null);
-  useEffect(() => {
-    const url = `https://fonts.googleapis.com/css2?family=${encodeURIComponent(fontFamily)}:wght@400;700&display=swap`;
-    if (fontLinkRef.current) fontLinkRef.current.remove();
-    const link = document.createElement("link");
-    link.rel = "stylesheet";
-    link.href = url;
-    link.media = "print";
-    link.onload = () => { link.media = "all"; };
-    document.head.appendChild(link);
-    fontLinkRef.current = link;
-    return () => { link.remove(); };
-  }, [fontFamily]);
   const textColor = appearance?.textColor || "#111827";
   const bgType = appearance?.bgType ?? "solid";
   const bgValue = appearance?.bgValue ?? "#f8f9fa";
