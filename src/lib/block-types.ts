@@ -60,6 +60,7 @@ export type BannerImage = {
 
 export type BannerConfig = {
   images: BannerImage[];
+  autoplay?: boolean;
 };
 
 export type SquareConfig = {
@@ -134,7 +135,7 @@ export function getDefaultConfig(type: BlockType): BlockConfig {
     case "button":
       return { title: "", linkType: "url", url: "", filled: true, showSubtitle: false, showImage: false, fontSize: "medium", animation: "none" };
     case "banner":
-      return { images: [] };
+      return { images: [], autoplay: false };
     case "square":
       return { imageUrl: "" };
     case "dual_square":

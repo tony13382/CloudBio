@@ -47,3 +47,14 @@
 .markdown-body hr { border: none; border-top: 1px solid currentColor; opacity: 0.2; margin: 1em 0; }
 .markdown-body table { border-collapse: collapse; width: 100%; margin: 0.5em 0; }
 .markdown-body th, .markdown-body td { border: 1px solid rgba(127,127,127,0.3); padding: 0.4em 0.6em; text-align: left; }
+
+/* Banner carousel controls — dots on the right, prev/next arrows on the left */
+.banner-carousel::-webkit-scrollbar { display: none; }
+.banner-controls { display: flex; align-items: center; justify-content: space-between; margin-top: 10px; gap: 8px; }
+.banner-arrows { display: flex; align-items: center; gap: 4px; }
+.banner-prev, .banner-next { width: 28px; height: 28px; border-radius: 50%; background: transparent; border: none; color: currentColor; opacity: 0.45; cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 0; transition: opacity 0.15s, background 0.15s; }
+.banner-prev:hover, .banner-next:hover { opacity: 1; background: rgba(127,127,127,0.12); }
+.banner-dots { display: flex; align-items: center; gap: 6px; }
+.banner-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; border: none; opacity: 0.25; padding: 0; cursor: pointer; transition: opacity 0.2s, width 0.2s, border-radius 0.2s; }
+.banner-dot:hover { opacity: 0.5; }
+.banner-dot.active { opacity: 0.85; width: 18px; border-radius: 3px; }

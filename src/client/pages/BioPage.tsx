@@ -9,6 +9,7 @@ import { QRCodeSVG } from "qrcode.react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "../components/ui/dialog";
 import { Button } from "../components/ui/button";
 import PageHeader from "../components/PageHeader";
+import BannerCarousel from "../components/BannerCarousel";
 import { renderMarkdown } from "../../lib/markdown";
 import type { SocialLink } from "../../lib/social-platforms";
 
@@ -131,34 +132,8 @@ function BlockRenderer({ block, appearance, username }: { block: Block; appearan
       );
     }
     case "banner": {
-      const images = (c.images as { url: string; linkUrl?: string; alt?: string; label?: string; labelColor?: string; labelPosition?: string; description?: string; descriptionAlign?: string }[]) || [];
-      if (images.length === 0) return null;
-      return (
-        <div style={{ display: "flex", overflowX: "auto", gap: 8, scrollSnapType: "x mandatory", scrollbarWidth: "none" }}>
-          {images.map((img, i) => {
-            const inner = (
-              <div key={i} style={{ flex: "0 0 85%", scrollSnapAlign: "start" }}>
-                <div style={{ position: "relative" }}>
-                  <img src={img.url} alt={img.alt || ""} style={{ width: "100%", height: 200, objectFit: "cover", borderRadius: 12 }} />
-                  {img.label && (
-                    <LabelOverlay label={img.label} color={img.labelColor} position={img.labelPosition} />
-                  )}
-                </div>
-                {img.description && (
-                  <p style={{ margin: "4px 0 0", fontSize: "0.8rem", opacity: 0.7, textAlign: (img.descriptionAlign as "left" | "center" | "right") || "center" }}>
-                    {img.description}
-                  </p>
-                )}
-              </div>
-            );
-            return img.linkUrl ? (
-              <a key={i} href={img.linkUrl} target="_blank" rel="noopener noreferrer" style={{ flex: "0 0 85%", textDecoration: "none", color: "inherit" }}>
-                {inner}
-              </a>
-            ) : inner;
-          })}
-        </div>
-      );
+      const images = (c.images as import("../components/BannerCarousel").BannerSlide[]) || [];
+      return <BannerCarousel images={images} autoplay={!!c.autoplay} />;
     }
     case "square": {
       const imgUrl = String(c.imageUrl || "");

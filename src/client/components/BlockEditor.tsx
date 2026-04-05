@@ -454,6 +454,11 @@ function BannerEditor({ data, update }: { data: Record<string, unknown>; update:
 
   return (
     <div className="space-y-3">
+      <SwitchField
+        label="自動輪播"
+        checked={!!data.autoplay}
+        onChange={(v) => update("autoplay", v)}
+      />
       {images.map((img, i) => (
         <ImageCardEditor
           key={i}

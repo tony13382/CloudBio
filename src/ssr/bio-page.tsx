@@ -90,17 +90,27 @@ function renderBlock(block: Block, appearance: Appearance | null, ctx: { usernam
     case "banner": {
       const images = (c.images as { url: string; linkUrl?: string; alt?: string; label?: string; labelColor?: string; labelPosition?: string; description?: string; descriptionAlign?: string }[]) || [];
       if (images.length === 0) return "";
+      const autoplay = c.autoplay === true;
+      const multi = images.length > 1;
       const slides = images
         .map((img) => {
           const labelHtml = renderLabel(img.label, img.labelColor, img.labelPosition);
           const descHtml = renderDescription(img.description, img.descriptionAlign);
-          const inner = `<div style="position:relative;"><img src="${escapeHtml(img.url)}" alt="${escapeHtml(img.alt || "")}" style="width:100%;height:200px;object-fit:cover;border-radius:12px;" />${labelHtml}</div>${descHtml}`;
+          const inner = `<div style="position:relative;"><img src="${escapeHtml(img.url)}" alt="${escapeHtml(img.alt || "")}" style="width:100%;height:auto;border-radius:12px;display:block;" />${labelHtml}</div>${descHtml}`;
           return img.linkUrl
-            ? `<a href="${escapeHtml(img.linkUrl)}" target="_blank" rel="noopener noreferrer" style="flex:0 0 85%;text-decoration:none;color:inherit;">${inner}</a>`
-            : `<div style="flex:0 0 85%;">${inner}</div>`;
+            ? `<a href="${escapeHtml(img.linkUrl)}" target="_blank" rel="noopener noreferrer" style="flex:0 0 100%;text-decoration:none;color:inherit;">${inner}</a>`
+            : `<div style="flex:0 0 100%;">${inner}</div>`;
         })
         .join("");
-      return `<div class="banner-carousel" style="display:flex;overflow-x:auto;gap:8px;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;padding-bottom:4px;">${slides}</div>`;
+      const carousel = `<div class="banner-carousel" style="display:flex;overflow-x:auto;gap:8px;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;">${slides}</div>`;
+      if (!multi) {
+        return `<div class="banner-block">${carousel}</div>`;
+      }
+      const dots = images
+        .map((_, i) => `<button type="button" class="banner-dot${i === 0 ? " active" : ""}" data-dot="${i}" aria-label="第 ${i + 1} 張"></button>`)
+        .join("");
+      const controls = `<div class="banner-controls"><div class="banner-arrows"><button type="button" class="banner-prev" aria-label="上一張"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button><button type="button" class="banner-next" aria-label="下一張"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg></button></div><div class="banner-dots">${dots}</div></div>`;
+      return `<div class="banner-block" data-banner${autoplay ? ' data-autoplay="true"' : ""}>${carousel}${controls}</div>`;
     }
     case "square": {
       const imgUrl = escapeHtml(String(c.imageUrl || ""));
@@ -225,6 +235,14 @@ body { padding-top: 72px; }
 .bio-anim-shake:hover { animation: bio-shake 0.4s ease-in-out; }
 .banner-carousel::-webkit-scrollbar { display: none; }
 .banner-carousel { scrollbar-width: none; }
+.banner-controls { display: flex; align-items: center; justify-content: space-between; margin-top: 10px; gap: 8px; }
+.banner-arrows { display: flex; align-items: center; gap: 4px; }
+.banner-prev, .banner-next { width: 28px; height: 28px; border-radius: 50%; background: transparent; border: none; color: currentColor; opacity: 0.45; cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 0; transition: opacity 0.15s, background 0.15s; }
+.banner-prev:hover, .banner-next:hover { opacity: 1; background: rgba(127,127,127,0.12); }
+.banner-dots { display: flex; align-items: center; gap: 6px; }
+.banner-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; border: none; opacity: 0.25; padding: 0; cursor: pointer; transition: opacity 0.2s, width 0.2s, border-radius 0.2s; }
+.banner-dot:hover { opacity: 0.5; }
+.banner-dot.active { opacity: 0.85; width: 18px; border-radius: 3px; }
 .markdown-body > :first-child { margin-top: 0; }
 .markdown-body > :last-child { margin-bottom: 0; }
 .markdown-body h1, .markdown-body h2, .markdown-body h3 { margin: 1em 0 0.5em; font-weight: 700; line-height: 1.3; }
@@ -301,6 +319,7 @@ body { padding-top: 72px; }
     </div>
     <p class="footer">Powered by CloudBio</p>
   </div>
+  <script>${bannerScript()}</script>
 </body>
 </html>`;
 }
@@ -355,6 +374,14 @@ ${css}
 .bio-anim-shake:hover { animation: bio-shake 0.4s ease-in-out; }
 .banner-carousel::-webkit-scrollbar { display: none; }
 .banner-carousel { scrollbar-width: none; }
+.banner-controls { display: flex; align-items: center; justify-content: space-between; margin-top: 10px; gap: 8px; }
+.banner-arrows { display: flex; align-items: center; gap: 4px; }
+.banner-prev, .banner-next { width: 28px; height: 28px; border-radius: 50%; background: transparent; border: none; color: currentColor; opacity: 0.45; cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 0; transition: opacity 0.15s, background 0.15s; }
+.banner-prev:hover, .banner-next:hover { opacity: 1; background: rgba(127,127,127,0.12); }
+.banner-dots { display: flex; align-items: center; gap: 6px; }
+.banner-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; border: none; opacity: 0.25; padding: 0; cursor: pointer; transition: opacity 0.2s, width 0.2s, border-radius 0.2s; }
+.banner-dot:hover { opacity: 0.5; }
+.banner-dot.active { opacity: 0.85; width: 18px; border-radius: 3px; }
 .markdown-body > :first-child { margin-top: 0; }
 .markdown-body > :last-child { margin-bottom: 0; }
 .markdown-body h1, .markdown-body h2, .markdown-body h3 { margin: 1em 0 0.5em; font-weight: 700; line-height: 1.3; }
@@ -402,8 +429,44 @@ ${css}
     </div>
     <p class="footer">Powered by CloudBio</p>
   </div>
+  <script>${bannerScript()}</script>
 </body>
 </html>`;
+}
+
+/**
+ * Vanilla JS that runs once at the bottom of the SSR page to wire up every
+ * `.banner-block` on the page: dot sync, prev/next clicks, and (if
+ * `data-autoplay="true"`) a 4s auto-rotate timer that pauses on hover.
+ * Kept as a single string so the SSR template can inline it.
+ */
+function bannerScript(): string {
+  return `(function(){
+var blocks=document.querySelectorAll('.banner-block[data-banner]');
+blocks.forEach(function(block){
+  var scroller=block.querySelector('.banner-carousel');
+  var dots=block.querySelectorAll('.banner-dot');
+  var prev=block.querySelector('.banner-prev');
+  var next=block.querySelector('.banner-next');
+  if(!scroller||!scroller.firstElementChild)return;
+  var gap=8;
+  function slideW(){return scroller.firstElementChild.offsetWidth+gap;}
+  function cur(){return Math.round(scroller.scrollLeft/slideW());}
+  function syncDots(){var i=cur();dots.forEach(function(d,j){d.classList.toggle('active',j===i);});}
+  function goTo(i){var n=dots.length;var t=((i%n)+n)%n;scroller.scrollTo({left:t*slideW(),behavior:'smooth'});}
+  scroller.addEventListener('scroll',syncDots,{passive:true});
+  if(prev)prev.addEventListener('click',function(){goTo(cur()-1);});
+  if(next)next.addEventListener('click',function(){goTo(cur()+1);});
+  dots.forEach(function(d,i){d.addEventListener('click',function(){goTo(i);});});
+  if(block.getAttribute('data-autoplay')==='true'&&dots.length>1){
+    var paused=false;
+    block.addEventListener('mouseenter',function(){paused=true;});
+    block.addEventListener('mouseleave',function(){paused=false;});
+    setInterval(function(){if(paused)return;var n=dots.length;goTo((cur()+1)%n);},4000);
+  }
+  syncDots();
+});
+})();`;
 }
 
 function escapeHtml(str: string): string {

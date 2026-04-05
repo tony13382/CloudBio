@@ -22,6 +22,7 @@ import { parseConfig } from "../hooks/useBlocks";
 import type { Appearance } from "../hooks/useAppearance";
 import { FONT_SIZE_MAP, type FontSize, type BlockType } from "../../lib/block-types";
 import BlockEditor from "./BlockEditor";
+import BannerCarousel from "./BannerCarousel";
 import { renderMarkdown } from "../../lib/markdown";
 
 type Props = {
@@ -81,13 +82,9 @@ function BlockPreview({ block, appearance }: { block: Block; appearance: Appeara
       );
     }
     case "banner": {
-      const images = (c.images as { url: string; alt?: string }[]) || [];
+      const images = (c.images as import("./BannerCarousel").BannerSlide[]) || [];
       if (!images.length) return <div className="h-20 rounded-lg bg-muted flex items-center justify-center text-xs text-muted-foreground">橫幅看板（無圖片）</div>;
-      return (
-        <div className="flex gap-2 overflow-x-auto rounded-lg" style={{ scrollbarWidth: "none" }}>
-          {images.map((img, i) => <img key={i} src={img.url} alt={img.alt || ""} className="h-24 w-auto rounded-lg object-cover shrink-0" />)}
-        </div>
-      );
+      return <BannerCarousel images={images} autoplay={!!c.autoplay} disableLinks />;
     }
     case "square": {
       const imgUrl = String(c.imageUrl || "");

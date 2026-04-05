@@ -5,6 +5,7 @@ import { FONT_SIZE_MAP, type FontSize } from "../../lib/block-types";
 import type { SocialLink } from "../../lib/social-platforms";
 import { getSocialIcon } from "./SocialLinksEditor";
 import { renderMarkdown } from "../../lib/markdown";
+import BannerCarousel from "./BannerCarousel";
 
 function resolveFontSize(key: string): string {
   return FONT_SIZE_MAP[key as FontSize] || "1rem";
@@ -97,24 +98,16 @@ function BlockRenderer({ block, appearance }: { block: Block; appearance: Appear
       );
     }
     case "banner": {
-      const images = (c.images as { url: string; alt?: string; label?: string; labelColor?: string; labelPosition?: string; description?: string; descriptionAlign?: string }[]) || [];
+      const images = (c.images as import("./BannerCarousel").BannerSlide[]) || [];
       if (images.length === 0) return null;
       return (
-        <div className="flex gap-1.5 overflow-x-auto" style={{ scrollSnapType: "x mandatory", scrollbarWidth: "none" }}>
-          {images.map((img, i) => (
-            <div key={i} className="flex-shrink-0" style={{ width: "85%", scrollSnapAlign: "start" }}>
-              <div className="relative">
-                <img src={img.url} alt={img.alt || ""} className="w-full h-[80px] object-cover rounded-lg" />
-                <LabelOverlay label={img.label} color={img.labelColor} position={img.labelPosition} />
-              </div>
-              {img.description && (
-                <p className="text-[8px] opacity-60 mt-0.5 truncate" style={{ textAlign: (img.descriptionAlign as "left" | "center" | "right") || "center" }}>
-                  {img.description}
-                </p>
-              )}
-            </div>
-          ))}
-        </div>
+        <BannerCarousel
+          images={images}
+          autoplay={!!c.autoplay}
+          gap={6}
+          descriptionFontSize={8}
+          disableLinks
+        />
       );
     }
     case "square": {

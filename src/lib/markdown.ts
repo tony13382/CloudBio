@@ -27,8 +27,17 @@ function sanitizeHtml(html: string): string {
     .replace(/(href|src)\s*=\s*(["'])\s*(javascript|vbscript|data:text\/html)[^"']*\2/gi, '$1="#"');
 }
 
+/**
+ * Unwrap `<p><img></p>` → `<img>` so solo images become direct children of
+ * `.markdown-body`. Needed so the card style can apply full-bleed negative
+ * margins without a wrapping `<p>` element getting in the way.
+ */
+function unwrapSoloImages(html: string): string {
+  return html.replace(/<p>\s*(<img\b[^>]*>)\s*<\/p>/g, "$1");
+}
+
 export function renderMarkdown(source: string): string {
   if (!source) return "";
   const raw = marked.parse(source, { async: false }) as string;
-  return sanitizeHtml(raw);
+  return unwrapSoloImages(sanitizeHtml(raw));
 }
