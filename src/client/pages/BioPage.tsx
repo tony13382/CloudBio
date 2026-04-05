@@ -341,6 +341,8 @@ export default function BioPage() {
   const initial = (user.displayName || user.username).charAt(0).toUpperCase();
   const fontFamily = appearance?.fontFamily || "Noto Sans TC";
 
+  useEffect(() => { document.title = `${displayName}．CloudBio`; }, [displayName]);
+
   // Non-blocking font loading
   const fontLinkRef = useRef<HTMLLinkElement | null>(null);
   useEffect(() => {
