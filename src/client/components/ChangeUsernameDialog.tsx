@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "./ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogBody, DialogFooter, DialogTitle, DialogDescription } from "./ui/dialog";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
@@ -102,40 +102,43 @@ export default function ChangeUsernameDialog({ open, onClose }: Props) {
         </DialogHeader>
 
         {success ? (
-          <p className="text-sm text-green-600 text-center py-4">使用者名稱已更新</p>
+          <DialogBody>
+            <p className="text-sm text-green-600 text-center py-4">使用者名稱已更新</p>
+          </DialogBody>
         ) : (
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="space-y-2">
-              <Label>使用者名稱</Label>
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-muted-foreground whitespace-nowrap">/</span>
-                <Input
-                  value={username}
-                  onChange={(e) => handleChange(e.target.value)}
-                  minLength={3}
-                  maxLength={30}
-                  required
-                />
+          <form onSubmit={handleSubmit} className="contents">
+            <DialogBody className="space-y-4">
+              <div className="space-y-2">
+                <Label>使用者名稱</Label>
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-muted-foreground whitespace-nowrap">/</span>
+                  <Input
+                    value={username}
+                    onChange={(e) => handleChange(e.target.value)}
+                    minLength={3}
+                    maxLength={30}
+                    required
+                  />
+                </div>
+                {checking && (
+                  <p className="text-xs text-muted-foreground">檢查中...</p>
+                )}
+                {!checking && error && (
+                  <p className="text-xs text-destructive">{error}</p>
+                )}
+                {!checking && available === true && username !== user?.username && (
+                  <p className="text-xs text-green-600">此名稱可以使用</p>
+                )}
               </div>
-              {checking && (
-                <p className="text-xs text-muted-foreground">檢查中...</p>
-              )}
-              {!checking && error && (
-                <p className="text-xs text-destructive">{error}</p>
-              )}
-              {!checking && available === true && username !== user?.username && (
-                <p className="text-xs text-green-600">此名稱可以使用</p>
-              )}
-            </div>
-
-            <div className="flex gap-2 justify-end">
+            </DialogBody>
+            <DialogFooter className="flex gap-2 justify-end">
               <Button type="button" variant="ghost" onClick={onClose}>
                 取消
               </Button>
               <Button type="submit" disabled={!canSubmit}>
                 {loading ? "更新中..." : "確認修改"}
               </Button>
-            </div>
+            </DialogFooter>
           </form>
         )}
       </DialogContent>

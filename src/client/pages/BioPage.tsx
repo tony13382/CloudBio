@@ -10,6 +10,7 @@ import {
   Dialog,
   DialogContent,
   DialogHeader,
+  DialogBody,
   DialogTitle,
   DialogDescription,
 } from "../components/ui/dialog";
@@ -255,26 +256,30 @@ function BlockRenderer({
           {images.slice(0, 2).map((img, i) => {
             const content = (
               <div key={i} style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ position: "relative" }}>
-                  <img
-                    src={img.imageUrl}
-                    alt={img.alt || ""}
-                    style={{
-                      width: "100%",
-                      aspectRatio: "1",
-                      objectFit: "cover",
-                      borderRadius: 12,
-                      display: "block",
-                    }}
-                  />
-                  {img.label && (
-                    <LabelOverlay
-                      label={img.label}
-                      color={img.labelColor}
-                      position={img.labelPosition}
+                {img.imageUrl ? (
+                  <div style={{ position: "relative" }}>
+                    <img
+                      src={img.imageUrl}
+                      alt={img.alt || ""}
+                      style={{
+                        width: "100%",
+                        aspectRatio: "1",
+                        objectFit: "cover",
+                        borderRadius: 12,
+                        display: "block",
+                      }}
                     />
-                  )}
-                </div>
+                    {img.label && (
+                      <LabelOverlay
+                        label={img.label}
+                        color={img.labelColor}
+                        position={img.labelPosition}
+                      />
+                    )}
+                  </div>
+                ) : (
+                  <div style={{ width: "100%", aspectRatio: "1" }} />
+                )}
                 {img.description && (
                   <p
                     style={{
@@ -548,7 +553,7 @@ function ShareQRButtons({
               掃描 QR Code 開啟頁面
             </DialogDescription>
           </DialogHeader>
-          <div className="flex flex-col items-center gap-4 pt-4">
+          <DialogBody className="flex flex-col items-center gap-4">
             <QRCodeSVG value={pageUrl} size={200} level="M" />
             <p className="text-xs text-muted-foreground break-all text-center">
               {pageUrl}
@@ -561,7 +566,7 @@ function ShareQRButtons({
             >
               複製連結
             </Button>
-          </div>
+          </DialogBody>
         </DialogContent>
       </Dialog>
     </>

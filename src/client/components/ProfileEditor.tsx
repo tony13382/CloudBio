@@ -10,7 +10,7 @@ import { Button } from "./ui/button";
 import { Textarea } from "./ui/textarea";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "./ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogBody, DialogFooter, DialogTitle, DialogDescription } from "./ui/dialog";
 import { Separator } from "./ui/separator";
 import { Slider } from "./ui/slider";
 import { Camera, Loader2 } from "lucide-react";
@@ -139,129 +139,128 @@ export default function ProfileEditor({ open, onClose }: Props) {
 
   return (
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
-      <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
+      <DialogContent className="max-w-lg max-h-[85vh]">
         <DialogHeader>
           <DialogTitle>編輯個人檔案</DialogTitle>
           <DialogDescription className="sr-only">編輯你的個人資訊和社群連結</DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-5">
-          {error && (
-            <div className="rounded-lg bg-destructive/10 text-destructive px-4 py-3 text-sm">
-              {error}
-            </div>
-          )}
-
-          {/* Avatar */}
-          <div className="flex flex-col items-center gap-2">
-            <div
-              className="relative group cursor-pointer"
-              onClick={() => fileRef.current?.click()}
-            >
-              {avatarUrl ? (
-                <img src={avatarUrl} alt="大頭照" className="w-20 h-20 rounded-full object-cover border-2 border-border" />
-              ) : (
-                <div className="w-20 h-20 rounded-full bg-muted flex items-center justify-center text-2xl font-bold text-muted-foreground">
-                  {initial}
-                </div>
-              )}
-              <div className="absolute inset-0 rounded-full bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
-                {avatarUploading ? (
-                  <Loader2 className="h-5 w-5 text-white animate-spin" />
-                ) : (
-                  <Camera className="h-5 w-5 text-white" />
-                )}
+        <form onSubmit={handleSubmit} className="contents">
+          <DialogBody className="space-y-5">
+            {error && (
+              <div className="rounded-lg bg-destructive/10 text-destructive px-4 py-3 text-sm">
+                {error}
               </div>
-              <input
-                ref={fileRef}
-                type="file"
-                accept="image/jpeg,image/png,image/webp,image/gif"
-                className="hidden"
-                onChange={(e) => {
-                  const file = e.target.files?.[0];
-                  if (file) handleFileSelect(file);
-                  e.target.value = "";
-                }}
+            )}
+
+            {/* Avatar */}
+            <div className="flex flex-col items-center gap-2">
+              <div
+                className="relative group cursor-pointer"
+                onClick={() => fileRef.current?.click()}
+              >
+                {avatarUrl ? (
+                  <img src={avatarUrl} alt="大頭照" className="w-20 h-20 rounded-full object-cover border-2 border-border" />
+                ) : (
+                  <div className="w-20 h-20 rounded-full bg-muted flex items-center justify-center text-2xl font-bold text-muted-foreground">
+                    {initial}
+                  </div>
+                )}
+                <div className="absolute inset-0 rounded-full bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
+                  {avatarUploading ? (
+                    <Loader2 className="h-5 w-5 text-white animate-spin" />
+                  ) : (
+                    <Camera className="h-5 w-5 text-white" />
+                  )}
+                </div>
+                <input
+                  ref={fileRef}
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp,image/gif"
+                  className="hidden"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) handleFileSelect(file);
+                    e.target.value = "";
+                  }}
+                />
+              </div>
+              <p className="text-xs text-muted-foreground">點擊更換大頭照</p>
+            </div>
+
+            {/* Crop UI */}
+            {cropSrc && (
+              <div className="space-y-3">
+                <div className="relative w-full aspect-square rounded-lg overflow-hidden bg-muted">
+                  <Cropper
+                    image={cropSrc}
+                    crop={crop}
+                    zoom={zoom}
+                    aspect={1}
+                    cropShape="round"
+                    showGrid={false}
+                    onCropChange={setCrop}
+                    onZoomChange={setZoom}
+                    onCropComplete={onCropComplete}
+                  />
+                </div>
+                <div className="flex items-center gap-3">
+                  <span className="text-xs text-muted-foreground shrink-0">縮放</span>
+                  <Slider
+                    min={1}
+                    max={3}
+                    step={0.05}
+                    value={[zoom]}
+                    onValueChange={([v]) => setZoom(v)}
+                  />
+                </div>
+                <div className="flex gap-2 justify-end">
+                  <Button type="button" variant="ghost" size="sm" onClick={() => setCropSrc(null)}>
+                    取消
+                  </Button>
+                  <Button type="button" size="sm" disabled={avatarUploading} onClick={handleCropConfirm}>
+                    {avatarUploading ? <><Loader2 className="h-4 w-4 animate-spin mr-1" />上傳中...</> : "確認裁切"}
+                  </Button>
+                </div>
+              </div>
+            )}
+
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="pe-displayName">顯示名稱</Label>
+              <Input
+                id="pe-displayName"
+                value={displayName}
+                onChange={(e) => setDisplayName(e.target.value)}
+                placeholder="你的名稱"
+                maxLength={100}
               />
             </div>
-            <p className="text-xs text-muted-foreground">點擊更換大頭照</p>
-          </div>
 
-          {/* Crop UI */}
-          {cropSrc && (
-            <div className="space-y-3">
-              <div className="relative w-full aspect-square rounded-lg overflow-hidden bg-muted">
-                <Cropper
-                  image={cropSrc}
-                  crop={crop}
-                  zoom={zoom}
-                  aspect={1}
-                  cropShape="round"
-                  showGrid={false}
-                  onCropChange={setCrop}
-                  onZoomChange={setZoom}
-                  onCropComplete={onCropComplete}
-                />
-              </div>
-              <div className="flex items-center gap-3">
-                <span className="text-xs text-muted-foreground shrink-0">縮放</span>
-                <Slider
-                  min={1}
-                  max={3}
-                  step={0.05}
-                  value={[zoom]}
-                  onValueChange={([v]) => setZoom(v)}
-                />
-              </div>
-              <div className="flex gap-2 justify-end">
-                <Button type="button" variant="ghost" size="sm" onClick={() => setCropSrc(null)}>
-                  取消
-                </Button>
-                <Button type="button" size="sm" disabled={avatarUploading} onClick={handleCropConfirm}>
-                  {avatarUploading ? <><Loader2 className="h-4 w-4 animate-spin mr-1" />上傳中...</> : "確認裁切"}
-                </Button>
-              </div>
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="pe-bio">個人簡介</Label>
+              <Textarea
+                id="pe-bio"
+                value={bio}
+                onChange={(e) => setBio(e.target.value)}
+                rows={5}
+                placeholder="介紹一下你自己"
+                maxLength={500}
+              />
+              <p className="text-xs text-muted-foreground">{bio.length}/500</p>
             </div>
-          )}
 
-          <div className="space-y-2">
-            <Label htmlFor="pe-displayName">顯示名稱</Label>
-            <Input
-              id="pe-displayName"
-              value={displayName}
-              onChange={(e) => setDisplayName(e.target.value)}
-              placeholder="你的名稱"
-              maxLength={100}
-            />
-          </div>
+            <Separator />
 
-          <div className="space-y-2">
-            <Label htmlFor="pe-bio">個人簡介</Label>
-            <Textarea
-              id="pe-bio"
-              value={bio}
-              onChange={(e) => setBio(e.target.value)}
-              rows={3}
-              placeholder="介紹一下你自己"
-              maxLength={500}
-            />
-            <p className="text-xs text-muted-foreground">{bio.length}/500</p>
-          </div>
-
-          <Separator />
-
-          <SocialLinksEditor links={socialLinks} onChange={setSocialLinks} />
-
-          <Separator />
-
-          <div className="flex gap-2 justify-end">
+            <SocialLinksEditor links={socialLinks} onChange={setSocialLinks} />
+          </DialogBody>
+          <DialogFooter className="flex gap-2 justify-end">
             <Button type="button" variant="ghost" onClick={onClose}>
               取消
             </Button>
             <Button type="submit" disabled={loading || avatarUploading}>
               {loading ? "儲存中..." : "儲存"}
             </Button>
-          </div>
+          </DialogFooter>
         </form>
       </DialogContent>
     </Dialog>

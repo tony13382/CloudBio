@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "./ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogBody, DialogFooter, DialogTitle, DialogDescription } from "./ui/dialog";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
@@ -50,34 +50,37 @@ export default function GaSettingsDialog({ open, onClose }: Props) {
         </DialogHeader>
 
         {success ? (
-          <p className="text-sm text-green-600 text-center py-4">已儲存</p>
+          <DialogBody>
+            <p className="text-sm text-green-600 text-center py-4">已儲存</p>
+          </DialogBody>
         ) : (
-          <form onSubmit={handleSubmit} className="space-y-4">
-            {error && (
-              <div className="bg-destructive/10 text-destructive px-3 py-2 rounded-lg text-sm">
-                {error}
+          <form onSubmit={handleSubmit} className="contents">
+            <DialogBody className="space-y-4">
+              {error && (
+                <div className="bg-destructive/10 text-destructive px-3 py-2 rounded-lg text-sm">
+                  {error}
+                </div>
+              )}
+
+              <div className="space-y-2">
+                <Label>Measurement ID</Label>
+                <Input
+                  value={gaId}
+                  onChange={(e) => setGaId(e.target.value)}
+                  placeholder="G-XXXXXXXXXX"
+                  maxLength={20}
+                />
+                <p className="text-xs text-muted-foreground">留空則不啟用追蹤</p>
               </div>
-            )}
-
-            <div className="space-y-2">
-              <Label>Measurement ID</Label>
-              <Input
-                value={gaId}
-                onChange={(e) => setGaId(e.target.value)}
-                placeholder="G-XXXXXXXXXX"
-                maxLength={20}
-              />
-              <p className="text-xs text-muted-foreground">留空則不啟用追蹤</p>
-            </div>
-
-            <div className="flex gap-2 justify-end">
+            </DialogBody>
+            <DialogFooter className="flex gap-2 justify-end">
               <Button type="button" variant="ghost" onClick={onClose}>
                 取消
               </Button>
               <Button type="submit" disabled={loading}>
                 {loading ? "儲存中..." : "儲存"}
               </Button>
-            </div>
+            </DialogFooter>
           </form>
         )}
       </DialogContent>

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "./ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogBody, DialogFooter, DialogTitle, DialogDescription } from "./ui/dialog";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
@@ -65,55 +65,58 @@ export default function ChangePasswordDialog({ open, onClose }: Props) {
         </DialogHeader>
 
         {success ? (
-          <p className="text-sm text-green-600 text-center py-4">密碼已更新</p>
+          <DialogBody>
+            <p className="text-sm text-green-600 text-center py-4">密碼已更新</p>
+          </DialogBody>
         ) : (
-          <form onSubmit={handleSubmit} className="space-y-4">
-            {error && (
-              <div className="bg-destructive/10 text-destructive px-3 py-2 rounded-lg text-sm">
-                {error}
+          <form onSubmit={handleSubmit} className="contents">
+            <DialogBody className="space-y-4">
+              {error && (
+                <div className="bg-destructive/10 text-destructive px-3 py-2 rounded-lg text-sm">
+                  {error}
+                </div>
+              )}
+
+              <div className="space-y-2">
+                <Label>目前密碼</Label>
+                <Input
+                  type="password"
+                  required
+                  value={currentPassword}
+                  onChange={(e) => setCurrentPassword(e.target.value)}
+                />
               </div>
-            )}
 
-            <div className="space-y-2">
-              <Label>目前密碼</Label>
-              <Input
-                type="password"
-                required
-                value={currentPassword}
-                onChange={(e) => setCurrentPassword(e.target.value)}
-              />
-            </div>
+              <div className="space-y-2">
+                <Label>新密碼</Label>
+                <Input
+                  type="password"
+                  required
+                  minLength={8}
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  placeholder="至少 8 個字元"
+                />
+              </div>
 
-            <div className="space-y-2">
-              <Label>新密碼</Label>
-              <Input
-                type="password"
-                required
-                minLength={8}
-                value={newPassword}
-                onChange={(e) => setNewPassword(e.target.value)}
-                placeholder="至少 8 個字元"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label>確認新密碼</Label>
-              <Input
-                type="password"
-                required
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-              />
-            </div>
-
-            <div className="flex gap-2 justify-end">
+              <div className="space-y-2">
+                <Label>確認新密碼</Label>
+                <Input
+                  type="password"
+                  required
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                />
+              </div>
+            </DialogBody>
+            <DialogFooter className="flex gap-2 justify-end">
               <Button type="button" variant="ghost" onClick={handleClose}>
                 取消
               </Button>
               <Button type="submit" disabled={loading}>
                 {loading ? "處理中..." : "確認修改"}
               </Button>
-            </div>
+            </DialogFooter>
           </form>
         )}
       </DialogContent>

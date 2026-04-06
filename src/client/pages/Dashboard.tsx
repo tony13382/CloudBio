@@ -57,7 +57,7 @@ export default function Dashboard() {
 
   return (
     <DashboardLayout>
-      <div className="max-w-2xl mx-auto p-6 space-y-4" style={{ fontFamily: `'${appearance?.fontFamily ?? "Noto Sans TC"}', system-ui` }}>
+      <div className="mx-auto p-6 space-y-4" style={{ maxWidth: 480, fontFamily: `'${appearance?.fontFamily ?? "Noto Sans TC"}', system-ui` }}>
 
         {/* Page tabs */}
         <PageTabs

@@ -1,5 +1,5 @@
 import { BLOCK_TYPES, BLOCK_TYPE_LABELS, type BlockType } from "../../lib/block-types";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogBody, DialogTitle } from "./ui/dialog";
 import {
   Type,
   Image,
@@ -35,7 +35,7 @@ export default function BlockTypeSelector({ open, onSelect, onClose }: Props) {
         <DialogHeader>
           <DialogTitle>新增區塊</DialogTitle>
         </DialogHeader>
-        <div className="grid grid-cols-3 gap-3 pt-2">
+        <DialogBody className="grid grid-cols-3 gap-3">
           {BLOCK_TYPES.map((type) => (
             <button
               key={type}
@@ -46,7 +46,7 @@ export default function BlockTypeSelector({ open, onSelect, onClose }: Props) {
               <span className="text-xs font-medium">{BLOCK_TYPE_LABELS[type]}</span>
             </button>
           ))}
-        </div>
+        </DialogBody>
       </DialogContent>
     </Dialog>
   );

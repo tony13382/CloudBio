@@ -18,8 +18,7 @@ import {
 import { CSS } from "@dnd-kit/utilities";
 import type { Link } from "../hooks/useLinks";
 import LinkForm from "./LinkForm";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "./ui/dialog";
-import { Separator } from "./ui/separator";
+import { Dialog, DialogContent, DialogHeader, DialogBody, DialogFooter, DialogTitle, DialogDescription } from "./ui/dialog";
 
 type Props = {
   links: Link[];
@@ -86,53 +85,55 @@ function SortableItem({
 
       {/* Edit dialog */}
       <Dialog open={editing} onOpenChange={(v) => !v && setEditing(false)}>
-        <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
+        <DialogContent className="max-w-lg max-h-[85vh]">
           <DialogHeader>
             <DialogTitle>編輯連結</DialogTitle>
             <DialogDescription className="sr-only">編輯連結設定</DialogDescription>
           </DialogHeader>
 
-          <LinkForm
-            initialTitle={link.title}
-            initialUrl={link.url}
-            submitLabel="儲存"
-            onSubmit={async (title, url) => {
-              await onUpdate(link.id, { title, url });
-              setEditing(false);
-            }}
-            onCancel={() => setEditing(false)}
-          />
-
-          <Separator />
-
-          <div className="flex items-center justify-between">
-            <button
-              onClick={() => onUpdate(link.id, { isActive: !link.isActive })}
-              className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition ${
-                link.isActive
-                  ? "text-green-600 hover:bg-green-50"
-                  : "text-gray-400 hover:bg-gray-50"
-              }`}
-            >
-              <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                <circle cx="10" cy="10" r="6" />
-              </svg>
-              {link.isActive ? "已啟用" : "已停用"}
-            </button>
-
-            <button
-              onClick={async () => {
-                await onDelete(link.id);
+          <DialogBody>
+            <LinkForm
+              initialTitle={link.title}
+              initialUrl={link.url}
+              submitLabel="儲存"
+              onSubmit={async (title, url) => {
+                await onUpdate(link.id, { title, url });
                 setEditing(false);
               }}
-              className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium text-red-500 hover:bg-red-50 transition"
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-              </svg>
-              刪除連結
-            </button>
-          </div>
+              onCancel={() => setEditing(false)}
+            />
+          </DialogBody>
+
+          <DialogFooter>
+            <div className="flex items-center justify-between w-full">
+              <button
+                onClick={() => onUpdate(link.id, { isActive: !link.isActive })}
+                className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition ${
+                  link.isActive
+                    ? "text-green-600 hover:bg-green-50"
+                    : "text-gray-400 hover:bg-gray-50"
+                }`}
+              >
+                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                  <circle cx="10" cy="10" r="6" />
+                </svg>
+                {link.isActive ? "已啟用" : "已停用"}
+              </button>
+
+              <button
+                onClick={async () => {
+                  await onDelete(link.id);
+                  setEditing(false);
+                }}
+                className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium text-red-500 hover:bg-red-50 transition"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                </svg>
+                刪除連結
+              </button>
+            </div>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </>

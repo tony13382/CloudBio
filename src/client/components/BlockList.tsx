@@ -97,7 +97,7 @@ function BlockPreview({ block, appearance }: { block: Block; appearance: Appeara
         <div className="flex gap-2">
           {images.slice(0, 2).map((img, i) => img.imageUrl
             ? <img key={i} src={img.imageUrl} alt="" className="flex-1 min-w-0 aspect-square rounded-lg object-cover" />
-            : <div key={i} className="flex-1 min-w-0 aspect-square rounded-lg bg-muted" />
+            : <div key={i} className="flex-1 min-w-0 aspect-square rounded-lg" />
           )}
         </div>
       );

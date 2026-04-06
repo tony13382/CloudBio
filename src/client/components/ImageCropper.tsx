@@ -1,7 +1,7 @@
 import { useState, useCallback } from "react";
 import Cropper from "react-easy-crop";
 import type { Area } from "react-easy-crop";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "./ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogFooter, DialogTitle, DialogDescription } from "./ui/dialog";
 import { Button } from "./ui/button";
 import { Slider } from "./ui/slider";
 import { Label } from "./ui/label";
@@ -40,8 +40,8 @@ export default function ImageCropper({ open, imageSrc, aspectRatio, onComplete, 
 
   return (
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
-      <DialogContent className="max-w-lg p-0 overflow-hidden sm:max-w-lg max-sm:max-w-[100vw] max-sm:h-[100dvh] max-sm:rounded-none max-sm:border-0 max-sm:translate-y-0 max-sm:top-0 max-sm:flex max-sm:flex-col">
-        <DialogHeader className="px-4 pt-4 pb-0 sm:px-6 sm:pt-6">
+      <DialogContent className="max-w-lg overflow-hidden sm:max-w-lg max-sm:max-w-[100vw] max-sm:h-[100dvh] max-sm:rounded-none max-sm:border-0 max-sm:translate-y-0 max-sm:top-0">
+        <DialogHeader className="px-4 sm:px-6">
           <DialogTitle>裁切圖片</DialogTitle>
           <DialogDescription>拖曳平移，雙指縮放（{ratioLabel}）</DialogDescription>
         </DialogHeader>
@@ -60,7 +60,7 @@ export default function ImageCropper({ open, imageSrc, aspectRatio, onComplete, 
         </div>
 
         {/* Controls */}
-        <div className="px-4 pb-4 sm:px-6 sm:pb-6 space-y-4">
+        <DialogFooter className="border-0 space-y-4 px-4 sm:px-6">
           <div className="flex items-center gap-3">
             <ZoomOut className="h-4 w-4 text-muted-foreground shrink-0" />
             <Slider
@@ -81,7 +81,7 @@ export default function ImageCropper({ open, imageSrc, aspectRatio, onComplete, 
               {processing ? "處理中..." : "確認裁切"}
             </Button>
           </div>
-        </div>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   );

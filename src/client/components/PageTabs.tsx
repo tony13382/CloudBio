@@ -3,7 +3,15 @@ import type { Page } from "../hooks/usePages";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "./ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogBody,
+  DialogFooter,
+  DialogTitle,
+  DialogDescription,
+} from "./ui/dialog";
 import { Plus, Pencil, Trash2, Home } from "lucide-react";
 
 type Props = {
@@ -11,20 +19,33 @@ type Props = {
   activePageId: string | null;
   onSelect: (pageId: string) => void;
   onCreate: (slug: string, title: string | null) => Promise<void>;
-  onUpdate: (id: string, payload: { slug?: string; title?: string | null }) => Promise<void>;
+  onUpdate: (
+    id: string,
+    payload: { slug?: string; title?: string | null },
+  ) => Promise<void>;
   onDelete: (id: string) => Promise<void>;
 };
 
-export default function PageTabs({ pages, activePageId, onSelect, onCreate, onUpdate, onDelete }: Props) {
+export default function PageTabs({
+  pages,
+  activePageId,
+  onSelect,
+  onCreate,
+  onUpdate,
+  onDelete,
+}: Props) {
   const [createOpen, setCreateOpen] = useState(false);
   const [editTarget, setEditTarget] = useState<Page | null>(null);
 
   return (
     <>
-      <div className="flex items-center gap-2 overflow-x-auto pb-2 -mx-6 px-6" style={{ scrollbarWidth: "none" }}>
+      <div
+        className="flex items-center gap-2 overflow-x-auto pb-2 -mx-6 px-6"
+        style={{ scrollbarWidth: "none" }}
+      >
         {pages.map((page) => {
           const isActive = page.id === activePageId;
-          const label = page.isDefault ? "主頁" : (page.title || `/${page.slug}`);
+          const label = page.isDefault ? "主頁" : page.title || `/${page.slug}`;
           return (
             <button
               key={page.id}
@@ -131,37 +152,45 @@ function CreatePageDialog({
       <DialogContent className="max-w-sm">
         <DialogHeader>
           <DialogTitle>新增頁面</DialogTitle>
-          <DialogDescription>建立一個子頁，可從主頁或其他頁面連結過去。</DialogDescription>
+          <DialogDescription>
+            建立一個子頁，可從主頁或其他頁面連結過去。
+          </DialogDescription>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="page-slug">網址 slug</Label>
-            <Input
-              id="page-slug"
-              value={slug}
-              onChange={(e) => setSlug(e.target.value)}
-              placeholder="shop"
-              pattern="[a-z0-9][a-z0-9-]{0,39}"
-              required
-            />
-            <p className="text-xs text-muted-foreground">限小寫英數與 -，1-40 字</p>
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="page-title">頁面標題（顯示在 header）</Label>
-            <Input
-              id="page-title"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder="商店"
-            />
-          </div>
-          {error && <p className="text-sm text-destructive">{error}</p>}
-          <div className="flex justify-end gap-2 pt-2">
-            <Button type="button" variant="outline" onClick={onClose}>取消</Button>
+        <form onSubmit={handleSubmit} className="contents">
+          <DialogBody className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="page-slug">網址 slug</Label>
+              <Input
+                id="page-slug"
+                value={slug}
+                onChange={(e) => setSlug(e.target.value)}
+                placeholder="shop"
+                pattern="[a-z0-9][a-z0-9-]{0,39}"
+                required
+              />
+              <p className="text-xs text-muted-foreground">
+                限小寫英數與 -，1-40 字
+              </p>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="page-title">頁面標題（顯示在 header）</Label>
+              <Input
+                id="page-title"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                placeholder="商店"
+              />
+            </div>
+            {error && <p className="text-sm text-destructive">{error}</p>}
+          </DialogBody>
+          <DialogFooter className="flex justify-end gap-2">
+            <Button type="button" variant="outline" onClick={onClose}>
+              取消
+            </Button>
             <Button type="submit" disabled={loading || !slug.trim()}>
               {loading ? "建立中..." : "建立"}
             </Button>
-          </div>
+          </DialogFooter>
         </form>
       </DialogContent>
     </Dialog>
@@ -198,7 +227,12 @@ function EditPageDialog({
   };
 
   const handleDelete = async () => {
-    if (!confirm(`確定要刪除頁面 "${page.title || page.slug}"？裡面的區塊都會一起被刪除。`)) return;
+    if (
+      !confirm(
+        `確定要刪除頁面 "${page.title || page.slug}"？裡面的區塊都會一起被刪除。`,
+      )
+    )
+      return;
     setLoading(true);
     try {
       await onDelete();
@@ -215,38 +249,49 @@ function EditPageDialog({
           <DialogTitle>編輯頁面</DialogTitle>
           <DialogDescription>修改頁面網址或標題。</DialogDescription>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="edit-slug">網址 slug</Label>
-            <Input
-              id="edit-slug"
-              value={slug}
-              onChange={(e) => setSlug(e.target.value)}
-              pattern="[a-z0-9][a-z0-9-]{0,39}"
-              required
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="edit-title">頁面標題</Label>
-            <Input
-              id="edit-title"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-            />
-          </div>
-          {error && <p className="text-sm text-destructive">{error}</p>}
-          <div className="flex justify-between gap-2 pt-2">
-            <Button type="button" variant="destructive" onClick={handleDelete} disabled={loading}>
-              <Trash2 className="h-4 w-4" />
-              刪除
-            </Button>
-            <div className="flex gap-2">
-              <Button type="button" variant="outline" onClick={onClose}>取消</Button>
-              <Button type="submit" disabled={loading}>
-                {loading ? "儲存中..." : "儲存"}
-              </Button>
+        <form onSubmit={handleSubmit} className="contents">
+          <DialogBody className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="edit-slug">網址 slug</Label>
+              <Input
+                id="edit-slug"
+                value={slug}
+                onChange={(e) => setSlug(e.target.value)}
+                pattern="[a-z0-9][a-z0-9-]{0,39}"
+                required
+              />
             </div>
-          </div>
+            <div className="space-y-2">
+              <Label htmlFor="edit-title">頁面標題</Label>
+              <Input
+                id="edit-title"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+              />
+            </div>
+            {error && <p className="text-sm text-destructive">{error}</p>}
+          </DialogBody>
+          <DialogFooter>
+            <div className="flex justify-between gap-2 w-full">
+              <Button
+                type="button"
+                variant="destructive"
+                onClick={handleDelete}
+                disabled={loading}
+              >
+                <Trash2 className="h-4 w-4" />
+                刪除
+              </Button>
+              <div className="flex gap-2">
+                <Button type="button" variant="outline" onClick={onClose}>
+                  取消
+                </Button>
+                <Button type="submit" disabled={loading}>
+                  {loading ? "儲存中..." : "儲存"}
+                </Button>
+              </div>
+            </div>
+          </DialogFooter>
         </form>
       </DialogContent>
     </Dialog>

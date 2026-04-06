@@ -8,8 +8,7 @@ import { Label } from "./ui/label";
 import { Switch } from "./ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
 import { Card } from "./ui/card";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "./ui/dialog";
-import { Separator } from "./ui/separator";
+import { Dialog, DialogContent, DialogHeader, DialogBody, DialogFooter, DialogTitle, DialogDescription } from "./ui/dialog";
 import { Tabs, TabsList, TabsTrigger } from "./ui/tabs";
 import { cn } from "../lib/utils";
 import { Plus, Trash2, Eye, EyeOff, ChevronUp, ChevronDown } from "lucide-react";
@@ -51,74 +50,75 @@ export default function BlockEditor({ open, type, config, isActive, onSave, onTo
 
   return (
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
-      <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
+      <DialogContent className="max-w-lg max-h-[85vh]">
         <DialogHeader>
           <DialogTitle>編輯{BLOCK_TYPE_LABELS[type]}</DialogTitle>
           <DialogDescription className="sr-only">編輯區塊設定</DialogDescription>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {type === "button" && <ButtonEditor data={data} update={update} />}
-          {type === "banner" && <BannerEditor data={data} update={update} />}
-          {type === "square" && <SquareEditor data={data} update={update} />}
-          {type === "dual_square" && <DualSquareEditor data={data} update={update} />}
-          {type === "video" && (
-            <div className="space-y-2">
-              <Label>YouTube 網址</Label>
-              <Input
-                type="url"
-                required
-                value={String(data.youtubeUrl || "")}
-                onChange={(e) => update("youtubeUrl", e.target.value)}
-                placeholder="https://www.youtube.com/watch?v=..."
-              />
-            </div>
-          )}
-          {type === "divider" && (
-            <div className="space-y-2">
-              <Label>分隔線樣式</Label>
-              <Select value={String(data.style || "solid")} onValueChange={(v) => update("style", v)}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="solid">實線</SelectItem>
-                  <SelectItem value="dashed">虛線</SelectItem>
-                  <SelectItem value="dotted">點線</SelectItem>
-                  <SelectItem value="blank">空白</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          )}
-          {type === "text" && <TextEditor data={data} update={update} />}
-          {type === "markdown" && <MarkdownEditor data={data} update={update} />}
-
-          <Separator />
-
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-1">
-              {onToggleActive && (
-                <Button type="button" variant="ghost" size="sm" onClick={onToggleActive}
-                  className={isActive ? "text-green-600" : "text-muted-foreground"}>
-                  {isActive ? <Eye className="h-4 w-4 mr-1.5" /> : <EyeOff className="h-4 w-4 mr-1.5" />}
-                  {isActive ? "已啟用" : "已停用"}
+        <form onSubmit={handleSubmit} className="contents">
+          <DialogBody className="space-y-4">
+            {type === "button" && <ButtonEditor data={data} update={update} />}
+            {type === "banner" && <BannerEditor data={data} update={update} />}
+            {type === "square" && <SquareEditor data={data} update={update} />}
+            {type === "dual_square" && <DualSquareEditor data={data} update={update} />}
+            {type === "video" && (
+              <div className="space-y-2">
+                <Label>YouTube 網址</Label>
+                <Input
+                  type="url"
+                  required
+                  value={String(data.youtubeUrl || "")}
+                  onChange={(e) => update("youtubeUrl", e.target.value)}
+                  placeholder="https://www.youtube.com/watch?v=..."
+                />
+              </div>
+            )}
+            {type === "divider" && (
+              <div className="space-y-2">
+                <Label>分隔線樣式</Label>
+                <Select value={String(data.style || "solid")} onValueChange={(v) => update("style", v)}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="solid">實線</SelectItem>
+                    <SelectItem value="dashed">虛線</SelectItem>
+                    <SelectItem value="dotted">點線</SelectItem>
+                    <SelectItem value="blank">空白</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+            {type === "text" && <TextEditor data={data} update={update} />}
+            {type === "markdown" && <MarkdownEditor data={data} update={update} />}
+          </DialogBody>
+          <DialogFooter>
+            <div className="flex items-center justify-between w-full">
+              <div className="flex items-center gap-1">
+                {onToggleActive && (
+                  <Button type="button" variant="ghost" size="sm" onClick={onToggleActive}
+                    className={isActive ? "text-green-600" : "text-muted-foreground"}>
+                    {isActive ? <Eye className="h-4 w-4 mr-1.5" /> : <EyeOff className="h-4 w-4 mr-1.5" />}
+                    {isActive ? "已啟用" : "已停用"}
+                  </Button>
+                )}
+                {onDelete && (
+                  <Button type="button" variant="ghost" size="sm" className="text-destructive hover:text-destructive" onClick={onDelete}>
+                    <Trash2 className="h-4 w-4 mr-1.5" />
+                    刪除
+                  </Button>
+                )}
+              </div>
+              <div className="flex gap-2">
+                <Button type="button" variant="ghost" onClick={onClose}>
+                  取消
                 </Button>
-              )}
-              {onDelete && (
-                <Button type="button" variant="ghost" size="sm" className="text-destructive hover:text-destructive" onClick={onDelete}>
-                  <Trash2 className="h-4 w-4 mr-1.5" />
-                  刪除
+                <Button type="submit" disabled={loading}>
+                  {loading ? "儲存中..." : "儲存"}
                 </Button>
-              )}
+              </div>
             </div>
-            <div className="flex gap-2">
-              <Button type="button" variant="ghost" onClick={onClose}>
-                取消
-              </Button>
-              <Button type="submit" disabled={loading}>
-                {loading ? "儲存中..." : "儲存"}
-              </Button>
-            </div>
-          </div>
+          </DialogFooter>
         </form>
       </DialogContent>
     </Dialog>
