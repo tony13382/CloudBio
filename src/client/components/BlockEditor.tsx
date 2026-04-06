@@ -12,7 +12,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Separator } from "./ui/separator";
 import { Tabs, TabsList, TabsTrigger } from "./ui/tabs";
 import { cn } from "../lib/utils";
-import { Plus, Trash2, Eye, EyeOff } from "lucide-react";
+import { Plus, Trash2, Eye, EyeOff, ChevronUp, ChevronDown } from "lucide-react";
 import ImageUploader from "./ImageUploader";
 import MarkdownEditor from "./MarkdownEditor";
 import { usePages } from "../hooks/usePages";
@@ -209,6 +209,10 @@ function ImageCardEditor({
   image,
   onChange,
   onRemove,
+  onMoveUp,
+  onMoveDown,
+  isFirst,
+  isLast,
   index,
   urlField,
   recommendedSize,
@@ -217,6 +221,10 @@ function ImageCardEditor({
   image: Record<string, unknown>;
   onChange: (updated: Record<string, unknown>) => void;
   onRemove: () => void;
+  onMoveUp?: () => void;
+  onMoveDown?: () => void;
+  isFirst?: boolean;
+  isLast?: boolean;
   index: number;
   urlField: string;
   recommendedSize: string;
@@ -229,9 +237,17 @@ function ImageCardEditor({
     <Card className="p-4 space-y-3">
       <div className="flex items-center justify-between">
         <span className="text-xs font-medium text-muted-foreground">圖片 {index + 1}</span>
-        <Button type="button" variant="ghost" size="sm" className="h-7 text-destructive hover:text-destructive" onClick={onRemove}>
-          <Trash2 className="h-3.5 w-3.5" />
-        </Button>
+        <div className="flex items-center gap-0.5">
+          <Button type="button" variant="ghost" size="sm" className="h-7 w-7 p-0" disabled={isFirst} onClick={onMoveUp}>
+            <ChevronUp className="h-3.5 w-3.5" />
+          </Button>
+          <Button type="button" variant="ghost" size="sm" className="h-7 w-7 p-0" disabled={isLast} onClick={onMoveDown}>
+            <ChevronDown className="h-3.5 w-3.5" />
+          </Button>
+          <Button type="button" variant="ghost" size="sm" className="h-7 text-destructive hover:text-destructive" onClick={onRemove}>
+            <Trash2 className="h-3.5 w-3.5" />
+          </Button>
+        </div>
       </div>
 
       <div className="space-y-2">
@@ -449,6 +465,13 @@ function BannerEditor({ data, update }: { data: Record<string, unknown>; update:
     update("images", images.filter((_, i) => i !== index));
   };
 
+  const moveImage = (from: number, to: number) => {
+    const newImages = [...images];
+    const [item] = newImages.splice(from, 1);
+    newImages.splice(to, 0, item);
+    update("images", newImages);
+  };
+
   const addImage = () => {
     update("images", [...images, { url: "", linkUrl: "", alt: "" }]);
   };
@@ -466,6 +489,10 @@ function BannerEditor({ data, update }: { data: Record<string, unknown>; update:
           image={img as unknown as Record<string, unknown>}
           onChange={(updated) => updateImage(i, updated)}
           onRemove={() => removeImage(i)}
+          onMoveUp={() => moveImage(i, i - 1)}
+          onMoveDown={() => moveImage(i, i + 1)}
+          isFirst={i === 0}
+          isLast={i === images.length - 1}
           index={i}
           urlField="url"
           recommendedSize="640 x 360"
