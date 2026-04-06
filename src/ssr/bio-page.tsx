@@ -95,8 +95,7 @@ function renderBlock(block: Block, appearance: Appearance | null, ctx: { usernam
       const slides = images
         .map((img) => {
           const labelHtml = renderLabel(img.label, img.labelColor, img.labelPosition);
-          const descHtml = renderDescription(img.description, img.descriptionAlign);
-          const inner = `<div style="position:relative;"><img src="${escapeHtml(img.url)}" alt="${escapeHtml(img.alt || "")}" style="width:100%;height:auto;border-radius:12px;display:block;" />${labelHtml}</div>${descHtml}`;
+          const inner = `<div style="position:relative;"><img src="${escapeHtml(img.url)}" alt="${escapeHtml(img.alt || "")}" style="width:100%;height:auto;border-radius:12px;display:block;" />${labelHtml}</div>`;
           return img.linkUrl
             ? `<a href="${escapeHtml(img.linkUrl)}" target="_blank" rel="noopener noreferrer" style="flex:0 0 100%;text-decoration:none;color:inherit;">${inner}</a>`
             : `<div style="flex:0 0 100%;">${inner}</div>`;
@@ -109,7 +108,10 @@ function renderBlock(block: Block, appearance: Appearance | null, ctx: { usernam
       const dots = images
         .map((_, i) => `<button type="button" class="banner-dot${i === 0 ? " active" : ""}" data-dot="${i}" aria-label="第 ${i + 1} 張"></button>`)
         .join("");
-      const controls = `<div class="banner-controls"><div class="banner-arrows"><button type="button" class="banner-prev" aria-label="上一張"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button><button type="button" class="banner-next" aria-label="下一張"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg></button></div><div class="banner-dots">${dots}</div></div>`;
+      const firstAlign = images[0]?.descriptionAlign || "center";
+      const descAttrs = images.map((img, idx) => `data-desc-${idx}="${escapeHtml((img.description || '').slice(0, 30))}" data-align-${idx}="${escapeHtml(String(img.descriptionAlign || 'center'))}"`).join(' ');
+      const descHtml = `<p class="banner-memo" style="margin:0;font-size:12px;opacity:0.7;flex:1;text-align:${firstAlign};white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" ${descAttrs}>${escapeHtml((images[0]?.description || '').slice(0, 30))}</p>`;
+      const controls = `<div class="banner-controls"><div class="banner-arrows"><button type="button" class="banner-prev" aria-label="上一張"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button><button type="button" class="banner-next" aria-label="下一張"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg></button></div>${descHtml}<div class="banner-dots">${dots}</div></div>`;
       return `<div class="banner-block" data-banner${autoplay ? ' data-autoplay="true"' : ""}>${carousel}${controls}</div>`;
     }
     case "square": {
@@ -452,7 +454,8 @@ blocks.forEach(function(block){
   var gap=8;
   function slideW(){return scroller.firstElementChild.offsetWidth+gap;}
   function cur(){return Math.round(scroller.scrollLeft/slideW());}
-  function syncDots(){var i=cur();dots.forEach(function(d,j){d.classList.toggle('active',j===i);});}
+  var memo=block.querySelector('.banner-memo');
+  function syncDots(){var i=cur();dots.forEach(function(d,j){d.classList.toggle('active',j===i);});if(memo){var t=memo.getAttribute('data-desc-'+i);memo.textContent=t||'';memo.style.textAlign=memo.getAttribute('data-align-'+i)||'center';}}
   function goTo(i){var n=dots.length;var t=((i%n)+n)%n;scroller.scrollTo({left:t*slideW(),behavior:'smooth'});}
   scroller.addEventListener('scroll',syncDots,{passive:true});
   if(prev)prev.addEventListener('click',function(){goTo(cur()-1);});

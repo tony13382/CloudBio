@@ -146,20 +146,6 @@ export default function BannerCarousel({
                   />
                 )}
               </div>
-              {img.description && (
-                <p
-                  style={{
-                    margin: "4px 0 0",
-                    fontSize: descriptionFontSize,
-                    opacity: 0.7,
-                    textAlign:
-                      (img.descriptionAlign as "left" | "center" | "right") ||
-                      "center",
-                  }}
-                >
-                  {img.description}
-                </p>
-              )}
             </div>
           );
           return img.linkUrl && !disableLinks ? (
@@ -210,6 +196,22 @@ export default function BannerCarousel({
               <ChevronRight size={16} />
             </button>
           </div>
+          <p
+            style={{
+              margin: 0,
+              fontSize: descriptionFontSize,
+              opacity: 0.7,
+              flex: 1,
+              textAlign:
+                (images[current]?.descriptionAlign as "left" | "center" | "right") ||
+                "center",
+              whiteSpace: "nowrap",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+            }}
+          >
+            {(images[current]?.description || "").slice(0, 30)}
+          </p>
           <div className="banner-dots">
             {images.map((_, i) => (
               <button

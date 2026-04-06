@@ -293,8 +293,9 @@ function ImageCardEditor({
         <Label>簡介文字</Label>
         <Input
           value={String(image.description || "")}
-          onChange={(e) => upd("description", e.target.value)}
-          placeholder="簡介文字"
+          onChange={(e) => upd("description", e.target.value.slice(0, 30))}
+          placeholder="簡介文字（最多 30 字）"
+          maxLength={30}
         />
       </div>
 
