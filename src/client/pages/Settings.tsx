@@ -16,7 +16,6 @@ import { Camera, Loader2 } from "lucide-react";
 export default function Settings() {
   const { user } = useAuth();
 
-  const [username, setUsername] = useState("");
   const [displayName, setDisplayName] = useState("");
   const [bio, setBio] = useState("");
   const [avatarUrl, setAvatarUrl] = useState("");
@@ -29,7 +28,6 @@ export default function Settings() {
 
   useEffect(() => {
     if (user) {
-      setUsername(user.username);
       setDisplayName(user.displayName ?? "");
       setBio(user.bio ?? "");
       setAvatarUrl(user.avatarUrl ?? "");
@@ -79,7 +77,6 @@ export default function Settings() {
     setLoading(true);
     try {
       await api.patch("/profile", {
-        username,
         displayName,
         bio,
         avatarUrl,
@@ -94,7 +91,7 @@ export default function Settings() {
     }
   };
 
-  const initial = (displayName || username || "U").charAt(0).toUpperCase();
+  const initial = (displayName || user?.username || "U").charAt(0).toUpperCase();
 
   return (
     <DashboardLayout>
@@ -153,21 +150,6 @@ export default function Settings() {
                   />
                 </div>
                 <p className="text-xs text-muted-foreground">點擊更換大頭照</p>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="username">使用者名稱</Label>
-                <div className="flex items-center gap-2">
-                  <span className="text-sm text-muted-foreground whitespace-nowrap">/</span>
-                  <Input
-                    id="username"
-                    required
-                    value={username}
-                    onChange={(e) => setUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_-]/g, ""))}
-                    minLength={3}
-                    maxLength={30}
-                  />
-                </div>
               </div>
 
               <div className="space-y-2">

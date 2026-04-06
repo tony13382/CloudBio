@@ -23,6 +23,7 @@ const updateSchema = z.object({
     platform: z.string(),
     url: z.string(),
   })).optional(),
+  gaId: z.string().max(20).nullable().optional(),
 });
 
 profileRoutes.patch("/", async (c) => {
@@ -69,6 +70,27 @@ profileRoutes.patch("/", async (c) => {
     const message = err instanceof Error ? err.message : "Update failed";
     return c.json({ error: message }, 409);
   }
+});
+
+profileRoutes.get("/check-username/:username", async (c) => {
+  const username = (c.req.param("username") ?? "").toLowerCase();
+
+  if (username.length < 3 || !/^[a-z0-9_-]+$/.test(username)) {
+    return c.json({ available: false, reason: "格式不正確" });
+  }
+  if (isReservedUsername(username)) {
+    return c.json({ available: false, reason: "此名稱為系統保留字" });
+  }
+
+  const currentUsername = c.get("username");
+  if (username === currentUsername) {
+    return c.json({ available: true });
+  }
+
+  const db = createDb(c.env.DB);
+  const userService = new UserService(db);
+  const existing = await userService.findByUsername(username);
+  return c.json({ available: !existing, reason: existing ? "該名稱已被使用" : undefined });
 });
 
 export { profileRoutes };

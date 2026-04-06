@@ -1,0 +1,1 @@
+ALTER TABLE users ADD COLUMN ga_id TEXT;

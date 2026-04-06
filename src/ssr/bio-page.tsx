@@ -6,6 +6,7 @@ type User = {
   displayName: string | null;
   bio: string | null;
   avatarUrl: string | null;
+  gaId?: string | null;
 };
 
 type Block = {
@@ -209,6 +210,7 @@ export function renderSubPage(
 
   const pageTitle = page.title || displayName;
   const backHref = `/${escapeHtml(user.username)}`;
+  const gaSnippet = user.gaId ? renderGaSnippet(user.gaId) : "";
 
   return `<!DOCTYPE html>
 <html lang="zh-TW">
@@ -225,6 +227,7 @@ export function renderSubPage(
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="preload" href="${googleFontUrl}" as="style" onload="this.rel='stylesheet'" />
   <noscript><link href="${googleFontUrl}" rel="stylesheet" /></noscript>
+  ${gaSnippet}
   <style>
 ${css}
 body { padding-top: 72px; }
@@ -347,6 +350,8 @@ export function renderBioPage(
     ? `<img class="avatar" src="${escapeHtml(user.avatarUrl)}" alt="${escapeHtml(displayName)}" />`
     : `<div class="avatar-placeholder">${escapeHtml(initial)}</div>`;
 
+  const gaSnippet = user.gaId ? renderGaSnippet(user.gaId) : "";
+
   return `<!DOCTYPE html>
 <html lang="zh-TW">
 <head>
@@ -362,6 +367,7 @@ export function renderBioPage(
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="preload" href="${googleFontUrl}" as="style" onload="this.rel='stylesheet'" />
   <noscript><link href="${googleFontUrl}" rel="stylesheet" /></noscript>
+  ${gaSnippet}
   <style>
 ${css}
 .link-btn-outline {
@@ -470,6 +476,12 @@ blocks.forEach(function(block){
   syncDots();
 });
 })();`;
+}
+
+function renderGaSnippet(gaId: string): string {
+  const id = escapeHtml(gaId.trim());
+  return `<script async src="https://www.googletagmanager.com/gtag/js?id=${id}"></script>
+  <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','${id}');</script>`;
 }
 
 function escapeHtml(str: string): string {

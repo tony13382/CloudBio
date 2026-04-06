@@ -9,6 +9,7 @@ type User = {
   bio: string | null;
   avatarUrl: string | null;
   socialLinks: string | null; // JSON string
+  gaId: string | null;
 };
 
 export function useAuth() {

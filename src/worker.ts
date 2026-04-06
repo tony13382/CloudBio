@@ -178,6 +178,7 @@ app.get("/:username/:pageSlug", async (c) => {
       displayName: user.displayName,
       bio: user.bio,
       avatarUrl: user.avatarUrl,
+      gaId: user.gaId,
     },
     { slug: page.slug, title: page.title },
     pageBlocks.filter((b) => b.isActive !== false).map((b) => ({
@@ -229,6 +230,7 @@ app.get("/:username", async (c) => {
       displayName: user.displayName,
       bio: user.bio,
       avatarUrl: user.avatarUrl,
+      gaId: user.gaId,
     },
     userBlocks.filter((b) => b.isActive !== false).map((b) => ({
       id: b.id,

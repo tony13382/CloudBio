@@ -10,6 +10,7 @@ export const users = sqliteTable("users", {
   bio: text("bio"),
   avatarUrl: text("avatar_url"),
   socialLinks: text("social_links"), // JSON: [{platform, url}]
+  gaId: text("ga_id"), // Google Analytics Measurement ID (G-XXXXXXX)
   createdAt: text("created_at").default(sql`(datetime('now'))`),
   updatedAt: text("updated_at").default(sql`(datetime('now'))`),
 });

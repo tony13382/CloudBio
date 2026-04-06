@@ -49,6 +49,7 @@ export class UserService {
       bio: user.bio,
       avatarUrl: user.avatarUrl,
       socialLinks: user.socialLinks,
+      gaId: user.gaId,
     };
   }
 
@@ -65,6 +66,7 @@ export class UserService {
       bio: user.bio,
       avatarUrl: user.avatarUrl,
       socialLinks: user.socialLinks,
+      gaId: user.gaId,
     };
   }
 
@@ -92,7 +94,7 @@ export class UserService {
 
   async updateProfile(
     id: string,
-    data: { username?: string; displayName?: string; bio?: string; avatarUrl?: string; socialLinks?: { platform: string; url: string }[] }
+    data: { username?: string; displayName?: string; bio?: string; avatarUrl?: string; socialLinks?: { platform: string; url: string }[]; gaId?: string | null }
   ) {
     if (data.username) {
       const normalized = data.username.toLowerCase();
@@ -113,6 +115,7 @@ export class UserService {
         ...(data.bio !== undefined && { bio: data.bio }),
         ...(data.avatarUrl !== undefined && { avatarUrl: data.avatarUrl }),
         ...(data.socialLinks !== undefined && { socialLinks: JSON.stringify(data.socialLinks) }),
+        ...(data.gaId !== undefined && { gaId: data.gaId }),
         updatedAt: sql`(datetime('now'))`,
       })
       .where(eq(users.id, id));

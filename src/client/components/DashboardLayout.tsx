@@ -7,8 +7,10 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "./ui/dropdown-menu";
 import ThemeEditor from "./ThemeEditor";
 import ChangePasswordDialog from "./ChangePasswordDialog";
+import GaSettingsDialog from "./GaSettingsDialog";
+import ChangeUsernameDialog from "./ChangeUsernameDialog";
 import React from "react";
-import { LogOut, KeyRound, Palette, Link as LinkIcon } from "lucide-react";
+import { LogOut, KeyRound, Palette, Link as LinkIcon, BarChart3, AtSign } from "lucide-react";
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const { user, logout } = useAuth();
@@ -16,6 +18,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const navigate = useNavigate();
   const [showAppearance, setShowAppearance] = useState(false);
   const [showChangePassword, setShowChangePassword] = useState(false);
+  const [showGaSettings, setShowGaSettings] = useState(false);
+  const [showChangeUsername, setShowChangeUsername] = useState(false);
 
   const handleLogout = async () => {
     await logout();
@@ -81,9 +85,17 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 </button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-40">
+                <DropdownMenuItem onClick={() => setShowChangeUsername(true)}>
+                  <AtSign className="h-4 w-4" />
+                  修改使用者名稱
+                </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => setShowChangePassword(true)}>
                   <KeyRound className="h-4 w-4" />
                   修改密碼
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setShowGaSettings(true)}>
+                  <BarChart3 className="h-4 w-4" />
+                  Google Analytics
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={handleLogout} className="text-destructive focus:text-destructive">
@@ -112,6 +124,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       </Sheet>
 
       <ChangePasswordDialog open={showChangePassword} onClose={() => setShowChangePassword(false)} />
+      <GaSettingsDialog open={showGaSettings} onClose={() => setShowGaSettings(false)} />
+      <ChangeUsernameDialog open={showChangeUsername} onClose={() => setShowChangeUsername(false)} />
     </div>
   );
 }
