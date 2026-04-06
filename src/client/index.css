@@ -58,3 +58,27 @@
 .banner-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; border: none; opacity: 0.25; padding: 0; cursor: pointer; transition: opacity 0.2s, width 0.2s, border-radius 0.2s; }
 .banner-dot:hover { opacity: 0.5; }
 .banner-dot.active { opacity: 0.85; width: 18px; border-radius: 3px; }
+
+/* Custom scrollbar — SCN style */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(150, 150, 150, 0.45) transparent;
+}
+
+*::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+  background: rgba(150, 150, 150, 0.4);
+  border-radius: 9999px;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background: rgba(150, 150, 150, 0.6);
+}

@@ -14,7 +14,6 @@ export default defineConfig({
   server: {
     hmr: true,
     headers: {
-      // Prevent caching index.html in dev
       "Cache-Control": "no-store",
     },
   },
