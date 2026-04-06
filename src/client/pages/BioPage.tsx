@@ -201,14 +201,14 @@ function BlockRenderer({ block, appearance, username }: { block: Block; appearan
       const mdStyle = String(c.style || "card");
       const wrapperStyle: React.CSSProperties = mdStyle === "card"
         ? {
-            background: "rgba(255,255,255,0.85)",
-            backdropFilter: "blur(12px)",
-            WebkitBackdropFilter: "blur(12px)",
-            borderRadius: 20,
-            padding: "20px 28px",
-            color: "#111827",
-            boxShadow: "0 1px 3px rgba(0,0,0,0.08)",
-          }
+          background: "rgba(255,255,255,0.85)",
+          backdropFilter: "blur(12px)",
+          WebkitBackdropFilter: "blur(12px)",
+          borderRadius: 20,
+          padding: "20px 28px",
+          color: "#111827",
+          boxShadow: "0 1px 3px rgba(0,0,0,0.08)",
+        }
         : { background: "transparent", padding: 0, color: textColor };
       return (
         <div
@@ -361,7 +361,7 @@ export default function BioPage() {
   const fontFamily = data?.appearance?.fontFamily || "Noto Sans TC";
 
   useEffect(() => {
-    if (displayName) document.title = `${displayName}．CloudBio`;
+    if (displayName) document.title = `${displayName}・CloudBio`;
   }, [displayName]);
 
   const fontLinkRef = useRef<HTMLLinkElement | null>(null);
@@ -468,74 +468,74 @@ export default function BioPage() {
         <div style={{ width: "100%", maxWidth: 480, display: "flex", flexDirection: "column", alignItems: "center", gap: 12 }}>
           {/* Profile header — only on main page */}
           {!isSubPage && (
-          <div style={{
-            width: "100%",
-            display: "flex", flexDirection: "column", alignItems: "center", gap: 8,
-            ...(isCard ? {
-              background: "rgba(255,255,255,0.85)",
-              backdropFilter: "blur(12px)",
-              borderRadius: 20,
-              padding: "40px 24px 28px 24px",
-              boxShadow: "0 1px 3px rgba(0,0,0,0.08)",
-              color: "#111827",
-            } : {}),
-          }}>
-            {/* Share + QR buttons */}
-            <ShareQRButtons pageUrl={window.location.href} displayName={displayName} isCard={isCard} textColor={textColor} />
+            <div style={{
+              width: "100%",
+              display: "flex", flexDirection: "column", alignItems: "center", gap: 8,
+              ...(isCard ? {
+                background: "rgba(255,255,255,0.85)",
+                backdropFilter: "blur(12px)",
+                borderRadius: 20,
+                padding: "40px 24px 28px 24px",
+                boxShadow: "0 1px 3px rgba(0,0,0,0.08)",
+                color: "#111827",
+              } : {}),
+            }}>
+              {/* Share + QR buttons */}
+              <ShareQRButtons pageUrl={window.location.href} displayName={displayName} isCard={isCard} textColor={textColor} />
 
-            {/* Avatar */}
-            {user.avatarUrl ? (
-              <img src={user.avatarUrl} alt={displayName} style={{ width: 96, height: 96, borderRadius: "50%", objectFit: "cover" }} />
-            ) : (
-              <div style={{
-                width: 96, height: 96, borderRadius: "50%",
-                background: "rgba(0,0,0,0.1)", color: isCard ? "#111827" : textColor,
-                display: "flex", alignItems: "center", justifyContent: "center",
-                fontSize: 36, fontWeight: 700,
-              }}>
-                {initial}
-              </div>
-            )}
-
-            {/* Name */}
-            <h1 style={{ fontSize: "1.5rem", fontWeight: 700, textAlign: "center", margin: 0, color: isCard ? "#111827" : undefined }}>{displayName}</h1>
-
-            {/* Bio */}
-            {user.bio && (
-              <p style={{ textAlign: "center", opacity: 0.7, maxWidth: 360, margin: 0, whiteSpace: "pre-line", color: isCard ? "#111827" : undefined }}>{user.bio}</p>
-            )}
-
-            {/* Social Links */}
-            {(() => {
-              let links: SocialLink[] = [];
-              try { links = user.socialLinks ? JSON.parse(user.socialLinks) : []; } catch { /* */ }
-              if (links.length === 0) return null;
-              return (
-                <div style={{ display: "flex", gap: 16, flexWrap: "wrap", justifyContent: "center", marginTop: 16 }}>
-                  {links.map((link, i) => {
-                    const iconUrl = getSocialIconUrl(link.platform);
-                    return (
-                      <a
-                        key={i}
-                        href={link.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        style={{ opacity: 0.7, transition: "opacity 0.2s" }}
-                        onMouseEnter={(e) => { e.currentTarget.style.opacity = "1"; }}
-                        onMouseLeave={(e) => { e.currentTarget.style.opacity = "0.7"; }}
-                      >
-                        {iconUrl ? (
-                          <img src={iconUrl} alt={link.platform} style={{ width: 24, height: 24, filter: isLightColor(isCard ? "#111827" : textColor) ? "invert(1)" : "none" }} />
-                        ) : (
-                          <span style={{ fontSize: 12 }}>{link.platform}</span>
-                        )}
-                      </a>
-                    );
-                  })}
+              {/* Avatar */}
+              {user.avatarUrl ? (
+                <img src={user.avatarUrl} alt={displayName} style={{ width: 96, height: 96, borderRadius: "50%", objectFit: "cover" }} />
+              ) : (
+                <div style={{
+                  width: 96, height: 96, borderRadius: "50%",
+                  background: "rgba(0,0,0,0.1)", color: isCard ? "#111827" : textColor,
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  fontSize: 36, fontWeight: 700,
+                }}>
+                  {initial}
                 </div>
-              );
-            })()}
-          </div>
+              )}
+
+              {/* Name */}
+              <h1 style={{ fontSize: "1.5rem", fontWeight: 700, textAlign: "center", margin: 0, color: isCard ? "#111827" : undefined }}>{displayName}</h1>
+
+              {/* Bio */}
+              {user.bio && (
+                <p style={{ textAlign: "center", opacity: 0.7, maxWidth: 360, margin: 0, whiteSpace: "pre-line", color: isCard ? "#111827" : undefined }}>{user.bio}</p>
+              )}
+
+              {/* Social Links */}
+              {(() => {
+                let links: SocialLink[] = [];
+                try { links = user.socialLinks ? JSON.parse(user.socialLinks) : []; } catch { /* */ }
+                if (links.length === 0) return null;
+                return (
+                  <div style={{ display: "flex", gap: 16, flexWrap: "wrap", justifyContent: "center", marginTop: 16 }}>
+                    {links.map((link, i) => {
+                      const iconUrl = getSocialIconUrl(link.platform);
+                      return (
+                        <a
+                          key={i}
+                          href={link.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          style={{ opacity: 0.7, transition: "opacity 0.2s" }}
+                          onMouseEnter={(e) => { e.currentTarget.style.opacity = "1"; }}
+                          onMouseLeave={(e) => { e.currentTarget.style.opacity = "0.7"; }}
+                        >
+                          {iconUrl ? (
+                            <img src={iconUrl} alt={link.platform} style={{ width: 24, height: 24, filter: isLightColor(isCard ? "#111827" : textColor) ? "invert(1)" : "none" }} />
+                          ) : (
+                            <span style={{ fontSize: 12 }}>{link.platform}</span>
+                          )}
+                        </a>
+                      );
+                    })}
+                  </div>
+                );
+              })()}
+            </div>
           )}
 
           {/* Blocks */}

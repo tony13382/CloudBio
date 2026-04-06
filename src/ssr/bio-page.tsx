@@ -217,7 +217,7 @@ export function renderSubPage(
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>${escapeHtml(pageTitle)}．${escapeHtml(displayName)}</title>
+  <title>${escapeHtml(pageTitle)}・${escapeHtml(displayName)}</title>
   <meta name="description" content="${escapeHtml(pageTitle)} - ${escapeHtml(displayName)}" />
   <meta property="og:title" content="${escapeHtml(pageTitle)}" />
   <meta property="og:description" content="${escapeHtml(displayName)}" />
@@ -357,7 +357,7 @@ export function renderBioPage(
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>${escapeHtml(displayName)}．CloudBio</title>
+  <title>${escapeHtml(displayName)}・CloudBio</title>
   <meta name="description" content="${escapeHtml(user.bio || `${displayName} 的個人連結頁面`)}" />
   <meta property="og:title" content="${escapeHtml(displayName)}" />
   <meta property="og:description" content="${escapeHtml(user.bio || `${displayName} 的個人連結頁面`)}" />
