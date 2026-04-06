@@ -1,15 +1,18 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
+import Cropper from "react-easy-crop";
+import type { Area } from "react-easy-crop";
 import { useAuth } from "../hooks/useAuth";
 import { api } from "../api";
 import { compressImage } from "../lib/compress-image";
 import type { SocialLink } from "../../lib/social-platforms";
 import SocialLinksEditor from "./SocialLinksEditor";
 import { Button } from "./ui/button";
-import { Input } from "./ui/input";
 import { Textarea } from "./ui/textarea";
+import { Input } from "./ui/input";
 import { Label } from "./ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "./ui/dialog";
 import { Separator } from "./ui/separator";
+import { Slider } from "./ui/slider";
 import { Camera, Loader2 } from "lucide-react";
 
 type Props = {
@@ -20,7 +23,6 @@ type Props = {
 export default function ProfileEditor({ open, onClose }: Props) {
   const { user } = useAuth();
 
-  const [username, setUsername] = useState("");
   const [displayName, setDisplayName] = useState("");
   const [bio, setBio] = useState("");
   const [avatarUrl, setAvatarUrl] = useState("");
@@ -30,9 +32,18 @@ export default function ProfileEditor({ open, onClose }: Props) {
   const [error, setError] = useState("");
   const fileRef = useRef<HTMLInputElement>(null);
 
+  // Crop state
+  const [cropSrc, setCropSrc] = useState<string | null>(null);
+  const [crop, setCrop] = useState({ x: 0, y: 0 });
+  const [zoom, setZoom] = useState(1);
+  const [croppedAreaPixels, setCroppedAreaPixels] = useState<Area | null>(null);
+
+  const onCropComplete = useCallback((_: Area, pixels: Area) => {
+    setCroppedAreaPixels(pixels);
+  }, []);
+
   useEffect(() => {
     if (user && open) {
-      setUsername(user.username);
       setDisplayName(user.displayName ?? "");
       setBio(user.bio ?? "");
       setAvatarUrl(user.avatarUrl ?? "");
@@ -45,12 +56,40 @@ export default function ProfileEditor({ open, onClose }: Props) {
     }
   }, [user, open]);
 
-  const handleAvatarUpload = async (file: File) => {
+  const handleFileSelect = (file: File) => {
     if (!file.type.startsWith("image/")) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      setCropSrc(reader.result as string);
+      setCrop({ x: 0, y: 0 });
+      setZoom(1);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const getCroppedBlob = (src: string, area: Area): Promise<Blob> =>
+    new Promise((resolve, reject) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        canvas.width = area.width;
+        canvas.height = area.height;
+        const ctx = canvas.getContext("2d")!;
+        ctx.drawImage(img, area.x, area.y, area.width, area.height, 0, 0, area.width, area.height);
+        canvas.toBlob((blob) => (blob ? resolve(blob) : reject(new Error("裁切失敗"))), "image/jpeg", 0.95);
+      };
+      img.onerror = () => reject(new Error("圖片載入失敗"));
+      img.src = src;
+    });
+
+  const handleCropConfirm = async () => {
+    if (!cropSrc || !croppedAreaPixels) return;
     setAvatarUploading(true);
     setError("");
     try {
-      const compressed = await compressImage(file, {
+      const blob = await getCroppedBlob(cropSrc, croppedAreaPixels);
+      const croppedFile = new File([blob], "avatar.jpg", { type: "image/jpeg" });
+      const compressed = await compressImage(croppedFile, {
         maxWidth: 512,
         maxHeight: 512,
         quality: 0.85,
@@ -69,6 +108,7 @@ export default function ProfileEditor({ open, onClose }: Props) {
       }
       const data = await res.json() as { url: string };
       setAvatarUrl(data.url);
+      setCropSrc(null);
     } catch (err) {
       setError(err instanceof Error ? err.message : "大頭照上傳失敗");
     } finally {
@@ -82,7 +122,6 @@ export default function ProfileEditor({ open, onClose }: Props) {
     setLoading(true);
     try {
       await api.patch("/profile", {
-        username,
         displayName,
         bio,
         avatarUrl,
@@ -96,7 +135,7 @@ export default function ProfileEditor({ open, onClose }: Props) {
     }
   };
 
-  const initial = (displayName || username || "U").charAt(0).toUpperCase();
+  const initial = (displayName || user?.username || "U").charAt(0).toUpperCase();
 
   return (
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
@@ -140,7 +179,7 @@ export default function ProfileEditor({ open, onClose }: Props) {
                 className="hidden"
                 onChange={(e) => {
                   const file = e.target.files?.[0];
-                  if (file) handleAvatarUpload(file);
+                  if (file) handleFileSelect(file);
                   e.target.value = "";
                 }}
               />
@@ -148,20 +187,42 @@ export default function ProfileEditor({ open, onClose }: Props) {
             <p className="text-xs text-muted-foreground">點擊更換大頭照</p>
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="pe-username">使用者名稱</Label>
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-muted-foreground whitespace-nowrap">/</span>
-              <Input
-                id="pe-username"
-                required
-                value={username}
-                onChange={(e) => setUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_-]/g, ""))}
-                minLength={3}
-                maxLength={30}
-              />
+          {/* Crop UI */}
+          {cropSrc && (
+            <div className="space-y-3">
+              <div className="relative w-full aspect-square rounded-lg overflow-hidden bg-muted">
+                <Cropper
+                  image={cropSrc}
+                  crop={crop}
+                  zoom={zoom}
+                  aspect={1}
+                  cropShape="round"
+                  showGrid={false}
+                  onCropChange={setCrop}
+                  onZoomChange={setZoom}
+                  onCropComplete={onCropComplete}
+                />
+              </div>
+              <div className="flex items-center gap-3">
+                <span className="text-xs text-muted-foreground shrink-0">縮放</span>
+                <Slider
+                  min={1}
+                  max={3}
+                  step={0.05}
+                  value={[zoom]}
+                  onValueChange={([v]) => setZoom(v)}
+                />
+              </div>
+              <div className="flex gap-2 justify-end">
+                <Button type="button" variant="ghost" size="sm" onClick={() => setCropSrc(null)}>
+                  取消
+                </Button>
+                <Button type="button" size="sm" disabled={avatarUploading} onClick={handleCropConfirm}>
+                  {avatarUploading ? <><Loader2 className="h-4 w-4 animate-spin mr-1" />上傳中...</> : "確認裁切"}
+                </Button>
+              </div>
             </div>
-          </div>
+          )}
 
           <div className="space-y-2">
             <Label htmlFor="pe-displayName">顯示名稱</Label>
