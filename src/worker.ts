@@ -132,6 +132,57 @@ app.route("/api/profile", profileRoutes);
 app.route("/api/upload", uploadRoutes);
 app.route("/api/pages", pageRoutes);
 
+// robots.txt
+app.get("/robots.txt", (c) => {
+  const origin = new URL(c.req.url).origin;
+  return c.text(
+    `User-agent: *\nAllow: /\nDisallow: /api/\nDisallow: /dashboard\n\nSitemap: ${origin}/sitemap.xml\n`,
+  );
+});
+
+// sitemap.xml
+app.get("/sitemap.xml", async (c) => {
+  const db = createDb(c.env.DB);
+  const origin = new URL(c.req.url).origin;
+
+  const allUsers = await db.query.users.findMany({
+    columns: { id: true, username: true, updatedAt: true },
+  });
+  const allPages = await db.query.pages.findMany({
+    columns: { userId: true, slug: true, updatedAt: true },
+    where: (p, { eq }) => eq(p.isDefault, false),
+  });
+
+  const idToUser = new Map(allUsers.map((u) => [u.id, u]));
+
+  let urls = "";
+
+  // Main bio pages
+  for (const u of allUsers) {
+    urls += `  <url>\n    <loc>${origin}/${encodeURIComponent(u.username)}</loc>\n`;
+    if (u.updatedAt) urls += `    <lastmod>${u.updatedAt.split(" ")[0]}</lastmod>\n`;
+    urls += `    <changefreq>weekly</changefreq>\n  </url>\n`;
+  }
+
+  // Sub-pages
+  for (const p of allPages) {
+    const owner = idToUser.get(p.userId);
+    if (!owner || !p.slug) continue;
+    urls += `  <url>\n    <loc>${origin}/${encodeURIComponent(owner.username)}/${encodeURIComponent(p.slug)}</loc>\n`;
+    if (p.updatedAt) urls += `    <lastmod>${p.updatedAt.split(" ")[0]}</lastmod>\n`;
+    urls += `    <changefreq>weekly</changefreq>\n  </url>\n`;
+  }
+
+  const xml = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls}</urlset>`;
+
+  return c.newResponse(xml, {
+    headers: {
+      "Content-Type": "application/xml; charset=utf-8",
+      "Cache-Control": "public, max-age=3600",
+    },
+  });
+});
+
 // Public SSR — sub-page (must come BEFORE /:username catch-all)
 app.get("/:username/:pageSlug", async (c) => {
   const username = (c.req.param("username") ?? "").toLowerCase();
