@@ -46,6 +46,7 @@ app.get("/api/bio/:username", async (c) => {
       bio: user.bio,
       avatarUrl: user.avatarUrl,
       socialLinks: user.socialLinks,
+      gaId: user.gaId ?? null,
     },
     page: { id: page.id, slug: page.slug, title: page.title, isDefault: page.isDefault },
     blocks: blocks
@@ -91,6 +92,7 @@ app.get("/api/bio/:username/:pageSlug", async (c) => {
       bio: user.bio,
       avatarUrl: user.avatarUrl,
       socialLinks: user.socialLinks,
+      gaId: user.gaId ?? null,
     },
     page: { id: page.id, slug: page.slug, title: page.title, isDefault: page.isDefault },
     blocks: blocks

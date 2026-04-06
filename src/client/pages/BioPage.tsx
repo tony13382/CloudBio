@@ -25,6 +25,7 @@ type BioData = {
     bio: string | null;
     avatarUrl: string | null;
     socialLinks: string | null;
+    gaId: string | null;
   };
   page?: {
     id: string;
@@ -378,6 +379,26 @@ export default function BioPage() {
     fontLinkRef.current = link;
     return () => { link.remove(); };
   }, [fontFamily, data]);
+
+  // Inject Google Analytics when gaId is available
+  useEffect(() => {
+    const gaId = data?.user.gaId;
+    if (!gaId) return;
+
+    const scriptSrc = document.createElement("script");
+    scriptSrc.async = true;
+    scriptSrc.src = `https://www.googletagmanager.com/gtag/js?id=${encodeURIComponent(gaId)}`;
+    document.head.appendChild(scriptSrc);
+
+    const scriptInline = document.createElement("script");
+    scriptInline.textContent = `window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config',${JSON.stringify(gaId)});`;
+    document.head.appendChild(scriptInline);
+
+    return () => {
+      scriptSrc.remove();
+      scriptInline.remove();
+    };
+  }, [data?.user.gaId]);
 
   if (loading) {
     return (
