@@ -80,8 +80,8 @@ function renderBlock(block: Block, appearance: Appearance | null, ctx: { usernam
         inner += `<img src="${imageUrl}" alt="" style="width:32px;height:32px;border-radius:8px;object-fit:cover;flex-shrink:0;" />`;
       }
       const textPart = subtitle
-        ? `<span style="display:flex;flex-direction:column;align-items:center;gap:2px;"><span>${title}</span><span style="font-size:0.75em;opacity:0.7;">${subtitle}</span></span>`
-        : `<span>${title}</span>`;
+        ? `<span style="display:flex;flex-direction:column;align-items:center;gap:2px;${imageUrl ? "flex:1;min-width:0;" : ""}"><span>${title}</span><span style="font-size:0.75em;opacity:0.7;">${subtitle}</span></span>`
+        : `<span${imageUrl ? ' style="flex:1;min-width:0;text-align:center;"' : ""}>${title}</span>`;
       inner += textPart;
 
       const flexStyle = imageUrl ? "display:flex;align-items:center;justify-content:center;gap:10px;" : "";

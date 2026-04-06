@@ -88,7 +88,7 @@ function BlockRenderer({ block, appearance }: { block: Block; appearance: Appear
           {showImage && (
             <img src={String(c.imageUrl)} alt="" className="w-6 h-6 rounded object-cover shrink-0" />
           )}
-          <span className="flex flex-col items-center gap-0.5">
+          <span className={`flex flex-col gap-0.5 items-center ${showImage ? "flex-1 min-w-0" : ""}`}>
             <span className="truncate">{String(c.title || "")}</span>
             {showSubtitle && (
               <span className="text-[9px] opacity-70 truncate">{String(c.subtitle)}</span>

@@ -74,7 +74,7 @@ function BlockPreview({ block, appearance }: { block: Block; appearance: Appeara
           }}
         >
           {imageUrl && <img src={imageUrl} alt="" className="w-7 h-7 rounded object-cover shrink-0" />}
-          <span className="flex flex-col items-center gap-0.5">
+          <span className={`flex flex-col items-center gap-0.5 ${imageUrl ? "flex-1 min-w-0" : ""}`}>
             <span className="truncate">{title}</span>
             {subtitle && <span className="text-xs opacity-70 truncate">{subtitle}</span>}
           </span>

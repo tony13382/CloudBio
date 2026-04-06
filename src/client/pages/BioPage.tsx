@@ -85,9 +85,9 @@ function BlockRenderer({ block, appearance, username }: { block: Block; appearan
       const content = (
         <>
           {showImage && (
-            <img src={String(c.imageUrl)} alt="" style={{ width: 32, height: 32, borderRadius: 8, objectFit: "cover" }} />
+            <img src={String(c.imageUrl)} alt="" style={{ width: 32, height: 32, borderRadius: 8, objectFit: "cover", flexShrink: 0 }} />
           )}
-          <span style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 2 }}>
+          <span style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 2, ...(showImage ? { flex: 1, minWidth: 0 } : {}) }}>
             <span>{String(c.title || "")}</span>
             {showSubtitle && (
               <span style={{ fontSize: "0.75em", opacity: 0.7 }}>{String(c.subtitle)}</span>
