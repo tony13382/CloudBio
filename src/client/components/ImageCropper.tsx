@@ -40,14 +40,14 @@ export default function ImageCropper({ open, imageSrc, aspectRatio, onComplete, 
 
   return (
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
-      <DialogContent className="max-w-lg overflow-hidden sm:max-w-lg max-sm:max-w-[100vw] max-sm:h-[100dvh] max-sm:rounded-none max-sm:border-0 max-sm:translate-y-0 max-sm:top-0">
+      <DialogContent className="max-w-lg overflow-hidden sm:max-w-lg max-sm:fixed max-sm:inset-0 max-sm:max-w-none max-sm:rounded-none max-sm:border-0 max-sm:translate-x-0 max-sm:translate-y-0">
         <DialogHeader className="px-4 sm:px-6">
           <DialogTitle>裁切圖片</DialogTitle>
           <DialogDescription>拖曳平移，雙指縮放（{ratioLabel}）</DialogDescription>
         </DialogHeader>
 
-        {/* Crop area — taller on mobile */}
-        <div className="relative w-full h-[min(60vw,350px)] sm:h-[350px] max-sm:flex-1 bg-black">
+        {/* Crop area */}
+        <div className="relative w-full sm:h-[350px] max-sm:flex-1 max-sm:min-h-0 bg-black">
           <Cropper
             image={imageSrc}
             crop={crop}
