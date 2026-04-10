@@ -231,7 +231,6 @@ export function renderSubPage(
   <style>
 ${css}
 body { padding-top: 72px; }
-.link-btn-outline { background: transparent !important; border: 2px solid currentColor; }
 @keyframes bio-pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.03)} }
 @keyframes bio-bounce { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-4px)} }
 @keyframes bio-shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-3px)} 75%{transform:translateX(3px)} }
@@ -370,10 +369,6 @@ export function renderBioPage(
   ${gaSnippet}
   <style>
 ${css}
-.link-btn-outline {
-  background: transparent !important;
-  border: 2px solid currentColor;
-}
 @keyframes bio-pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.03)} }
 @keyframes bio-bounce { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-4px)} }
 @keyframes bio-shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-3px)} 75%{transform:translateX(3px)} }

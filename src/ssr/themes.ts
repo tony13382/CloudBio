@@ -59,6 +59,8 @@ export function generateCSS(appearance: Appearance | null): string {
       --text-color: ${a.textColor};
       --btn-bg: ${btnBg};
       --btn-text: ${btnText};
+      --btn-fill-bg: ${a.buttonColor};
+      --btn-fill-text: ${a.buttonTextColor};
       --btn-radius: ${getButtonRadius(a.buttonStyle)};
       --btn-border: ${btnBorder};
       --font-family: '${a.fontFamily}', system-ui, sans-serif;
@@ -129,11 +131,38 @@ export function generateCSS(appearance: Appearance | null): string {
       text-align: center;
       font-weight: 500;
       font-size: 1rem;
-      transition: transform 0.15s, box-shadow 0.15s;
+      position: relative;
+      isolation: isolate;
+      transition: background-color 0.15s, color 0.15s, border-color 0.15s;
     }
-    .link-btn:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    .link-btn::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      background: rgba(0,0,0,0.1);
+      opacity: 0;
+      transition: opacity 0.15s;
+      pointer-events: none;
+      z-index: -1;
+    }
+    .link-btn:hover::after,
+    .link-btn:active::after {
+      opacity: 1;
+    }
+    .link-btn-outline {
+      background: transparent !important;
+      border: 2px solid currentColor;
+    }
+    .link-btn-outline:hover::after,
+    .link-btn-outline:active::after {
+      opacity: 0;
+    }
+    .link-btn-outline:hover,
+    .link-btn-outline:active {
+      background: var(--btn-fill-bg) !important;
+      color: var(--btn-fill-text) !important;
+      border-color: var(--btn-fill-bg) !important;
     }
     .footer {
       margin-top: 2rem;

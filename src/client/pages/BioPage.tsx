@@ -153,11 +153,14 @@ function BlockRenderer({
         alignItems: "center",
         justifyContent: "center",
         gap: "10px",
+        position: "relative",
+        isolation: "isolate",
+        ["--btn-fill-bg" as string]: buttonColor,
+        ["--btn-fill-text" as string]: buttonTextColor,
         ...animStyle,
       };
 
-      const sharedClass =
-        "block w-full py-3 px-4 text-center font-medium no-underline transition-transform hover:scale-[1.02]";
+      const sharedClass = `bio-link-btn ${useFilled ? "bio-link-btn-filled" : "bio-link-btn-outline"} block w-full py-3 px-4 text-center font-medium no-underline`;
 
       if (internalHref) {
         return (
@@ -714,6 +717,26 @@ export default function BioPage() {
       <style>{`
         @keyframes bio-pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.03)} }
         @keyframes bio-bounce { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-4px)} }
+        .bio-link-btn { transition: background-color 0.15s, color 0.15s, border-color 0.15s; }
+        .bio-link-btn::after {
+          content: '';
+          position: absolute;
+          inset: 0;
+          border-radius: inherit;
+          background: rgba(0,0,0,0.1);
+          opacity: 0;
+          transition: opacity 0.15s;
+          pointer-events: none;
+          z-index: -1;
+        }
+        .bio-link-btn-filled:hover::after,
+        .bio-link-btn-filled:active::after { opacity: 1; }
+        .bio-link-btn-outline:hover,
+        .bio-link-btn-outline:active {
+          background: var(--btn-fill-bg) !important;
+          color: var(--btn-fill-text) !important;
+          border-color: var(--btn-fill-bg) !important;
+        }
         body { margin: 0; ${bgCss} min-height: 100vh; }
         ${blurCss}
         .markdown-body > :first-child { margin-top: 0; }
